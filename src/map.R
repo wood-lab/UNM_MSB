@@ -27,10 +27,10 @@ library(rgdal)
 lots<-read.csv("data/final_lots_CAREER.csv")
 str(lots)
 
-polygon<-readOGR("Albuquerque_City_Limits-polygon.shp")
+polygon<-readOGR("mapping/data/Albuquerque_City_Limits-polygon.shp")
 polygon_df<-fortify(polygon)
 
-water<-readOGR("NHDArea.shp")
+water<-readOGR("mapping/data/NHDArea.shp")
 water_df<-fortify(water)
 
 bounds<-c(left=-106.89, bottom=34.82, right=-106.45, top=35.66)
@@ -42,8 +42,8 @@ map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% g
         axis.text=element_text(size=14),axis.title=element_text(size=14))+
   geom_rect(xmin=-106.89,ymin=34.8,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
   geom_hline(yintercept=35.2102673,linetype="dashed")+
-  #geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
-  #geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
+  geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
   annotate("text",x=-106.6,y=35.0975,label="City of Albuquerque",size=4.5)+
   annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)
 map
