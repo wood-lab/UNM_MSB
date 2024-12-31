@@ -3,7 +3,23 @@
 
 library(tidyverse)
 
-# Read in the list of "in-bounds" specimens - these are specimens that have >10 individuals.
+# Read in the list of "in-bounds" specimens - these are specimens that have >10 individuals. How was this list
+# produced?  Here were the steps:
+
+# Using fishnet2, I developed a preliminary list of the specific lots our team would be interested 
+# in targeting for the project we discussed last month.  
+  
+# - I started by pulling all MSB lots of the following species collected in Albuquerque: Cyprinella lutrensis, Gambusia affinis, Gila pandora, Hybognathus amarus, Lepomis cyanellus, Pimehales promelas, and Platygobio gracilis.
+# - I mapped all specimens of those species in each decade.
+# - Those maps showed that Gila pandora and Lepomis cyanellus did not have sufficient replication, so I discarded them.
+# - I then plotted latitude~year for each of the remaining species to get a more finely resolved sense of how sampling is distributed across time and space.
+# - These plots showed that there is a natural breakpoint of ~1970, where sampling tends to be more complete after the breakpoint.
+# - For each species, I found the min and max latitude pre-1970.  I then limited the lots for each species to those collected within this latitudinal range (so that we can ensure we're comparing the same geographical areas pre- and post-1970.
+# - After this procedure, it became clear that there was not enough sampling of Cyprinella lutrensis or Platygobio gracilis pre-1970, so I dropped these two species.
+# - I then eliminated any lots with <4 individuals (to minimize impact on the collection).  For the remaining lots, I requested half the number of individuals in the lot up to a total of 15 individuals requested.
+# - Finally, I needed to eliminate runs of lots at the same latitude in adjacent years.
+
+# This gave us the list I read in here:
 
 lots<-read.csv("data/final_lots_CAREER.csv")
 str(lots)
