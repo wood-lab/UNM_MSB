@@ -298,7 +298,7 @@ hyb_ama_matrix<-hyb_ama_selected %>%
 
 plot(jitter(hyb_ama_selected$Latitude,5)~hyb_ama_selected$YearCollected)+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
 
-write.csv(gam_aff_matrix,file="data/hyb_ama_goal.csv")
+write.csv(hyb_ama_matrix,file="data/hyb_ama_goal.csv")
 
 
 
@@ -345,6 +345,44 @@ pim_pro_matrix<-pim_pro_selected %>%
 
 plot(jitter(pim_pro_selected$Latitude,5)~pim_pro_selected$YearCollected)+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
 
-write.csv(gam_aff_matrix,file="data/pim_pro_goal.csv")
+write.csv(pim_pro_matrix,file="data/pim_pro_goal.csv")
  
 
+### Now bring everything together into the main dataset.
+
+gam_aff_final <- gam_aff_selected %>%
+  mutate(number_individuals_requested = 5)
+
+hyb_ama_final <- hyb_ama_selected %>%
+  mutate(number_individuals_requested = 5)
+
+pim_pro_final <- pim_pro_selected %>%
+  mutate(number_individuals_requested = 5)
+
+
+### Trim so that the datasets have the same number of columns
+
+ncol(gam_aff_final)
+ncol(hyb_ama_final)
+ncol(pim_pro_final)
+
+final_dataset <- rbind(gam_aff_final, hyb_ama_final, pim_pro_final)
+
+
+### Take out the old number of requested lots column
+
+final_dataset<-subset(final_dataset, select=-c(number_requested))
+
+
+### Tally up
+
+thing <- final_dataset %>%
+  group_by(ScientificName) %>%
+  summarize(num_individuals = sum(number_individuals_requested))
+
+435+295+365
+
+
+### Now write the final file.
+
+write.csv(final_dataset, file="data/final_lots_2024.12.30.csv")
