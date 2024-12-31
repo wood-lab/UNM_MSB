@@ -27,6 +27,15 @@ library(rgdal)
 lots<-read.csv("data/final_lots_CAREER.csv")
 str(lots)
 
+sum(lots$number_requested)
+
+thing <- lots %>%
+  group_by(Scientific_Name) %>%
+  summarize(count = n())
+  
+
+
+
 polygon<-readOGR("mapping/data/Albuquerque_City_Limits-polygon.shp")
 polygon_df<-fortify(polygon)
 
