@@ -468,3 +468,13 @@ impact_1951to1960<-pim_pro[which( pim_pro$combo == "impact_1951-1960"), ]
 # Replace PIMRPO MSB:Fish:94735
 impact_2011to2020<-pim_pro[which( pim_pro$combo == "impact_2011-2020"), ]
 # NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Connor working to identify more needing resampling on 6/12/25
+# Replace GAMAFF MSB:Fish:1068
+impact_1961to1970<-gam_aff[which( gam_aff$combo == "impact_1961-1970"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:1162
+impact_1941to1950<-hyb_ama[which( hyb_ama$combo == "impact_1941-1950"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+

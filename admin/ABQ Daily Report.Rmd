@@ -14,10 +14,14 @@ output:
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 # Description
-### Summary log of leadership and decision activities conducted by leadership team at the University of New Mexico during our 2025 summer CAREER parasite lab work in Albuquerque, New Mexico. 
+Summary log of leadership and decision activities conducted by leadership team at the University of New Mexico during our 2025 summer CAREER parasite lab work in Albuquerque, New Mexico. 
 
 
+# 6/11/25
+Connor sent resampling lots and numbers to Chelsea who replaced them in the spreadsheet on 6/12/25. 
 
+# 6/12/25
+Connor found two more lots that need to be resampled. Went back through the code file specimen_tallies.R and checked for resampling options for both GAMAFF 1068 and HYBAMA 1162. Neither of them are able to be replaced as there are no more available lots in the collection for their respective CI category and years. 
 
 
 
