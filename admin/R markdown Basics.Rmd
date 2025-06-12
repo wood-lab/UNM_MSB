@@ -1,0 +1,36 @@
+---
+title: "R markdown Basics"
+author: "Connor Whalen"
+date: "2025-06-10"
+output:
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    toc_depth: 3
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+# R markdown basics
+- R markdown functions just like a word document, except that you can also run code in it! Basically, if you want something to be text, just type it. If you want something to be code, you must type it in a 'chunk'. These chunks can then be run individually (by clicking the little green triangle in the top right corner of the chunk), or by selecting the Run menu at the top of the window (as with scripts). You can create a chunk by pressing option+control+i on a mac. They look like this: 
+```{r}
+
+```
+A chunk will run all code within an render anything you want to display in them. For example, if you wanted create some data and to run a histogram of the data, you can code it all into a chunk as below: (NOTE: if you need to load libraries, add packages, or load data, I usually will do those at the top of a document, but they can be loaded and run in any chunk)
+```{r}
+data_test <- c(1,2,3,4,4,4,4,4,4,4,5,6,6,7,8)
+hist(data_test)
+
+# side note, just like in a script file, anything ### out will not run in a chunk. As I explain below, # creates headings of different sizes outside of a chunk in markdown, so be careful where you use them.
+```
+As you work down the file, things build on each other as they do in a script file. R markdown files can be knit, meaning they can be consolidated and exported as a specific type of file (this process retains all the text and code and all outputs of code). To do this though, the arguments must be chronological or it will not work. So as you go through the document make sure that all arguments are chronological. Our current setup (as denoted in lines 1-15 of this document) will knit/render this file as an html link upon knitting (meaning we can access the knit directly from the github and it will open a current state of the file on our respective devices). 
+
+Finally, syntax and writing structure can be modified using different commands. The most useful is the use of the pound symbol to denote different sized headings:
+One oount sign size can be seen in line 16
+## large
+### medium
+#### smaller
+Each of these can be stacked and nested, meaning that if you press the little arrow next to the line number in the markdown file, you can collapse everything below that one pound sign. Once you feel like you are comfortable with this markdown stuff, you can click the little arrow at line 32 (which will collapse where this is written, leaving just the double pound sign and the word 'large'). When you are completely comfortable with markdown, collapse the arrow at line 16 to hide all these instructions. 
+

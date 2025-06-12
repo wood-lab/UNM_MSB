@@ -1,0 +1,24 @@
+---
+title: "ABQ Daily Report"
+author: "Connor Whalen, Gabby Commisso, Katie Leslie, Chelsea Wood"
+date: "2025-06-10"
+output:
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    toc_depth: 3
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+# Description
+### Summary log of leadership and decision activities conducted by leadership team at the University of New Mexico during our 2025 summer CAREER parasite lab work in Albuquerque, New Mexico. 
+
+
+
+
+
+
+
