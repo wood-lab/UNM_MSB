@@ -402,3 +402,69 @@ thing <- final_dataset %>%
 ### Now write the final file.
 
 write.csv(final_dataset, file="data/final_lots_2024.12.30.csv")
+
+
+
+
+### In his first week in ABQ, Connor discovered that some requested lots were missing / too small.
+### The code below finds replacements.
+
+# Replace GAMAFF MSB:Fish:19232
+impact_1991to2000<-gam_aff[ sample( which( gam_aff$combo == "impact_1991-2000"), 1, replace = F), ]
+# REPLACE WITH MSB:Fish:19232
+
+# Replace GAMAFF MSB:Fish:30386
+impact_1991to2000<-gam_aff[ sample( which( gam_aff$combo == "impact_1991-2000"), 1, replace = F), ]
+# REPLACE WITH MSB:Fish:43165
+
+# Replace GAMAFF MSB:Fish:5253
+control_1981to1990<-gam_aff[which( gam_aff$combo == "control_1981-1990"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:1150
+impact_1931to1940<-hyb_ama[which( hyb_ama$combo == "impact_1931-1940"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:1171
+impact_1931to1940<-hyb_ama[which( hyb_ama$combo == "impact_1931-1940"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:5247
+control_1981to1990<-hyb_ama[which( hyb_ama$combo == "control_1981-1990"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:5803
+control_1981to1990<-hyb_ama[which( hyb_ama$combo == "control_1981-1990"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:73766
+impact_2001to2010<-hyb_ama[which( hyb_ama$combo == "impact_2001-2010"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:77021
+impact_2001to2010<-hyb_ama[which( hyb_ama$combo == "impact_2001-2010"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:77030
+impact_2001to2010<-hyb_ama[which( hyb_ama$combo == "impact_2001-2010"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace PIMRPO MSB:Fish:11156
+control_1991to2000<-pim_pro[ sample( which( pim_pro$combo == "control_1991-2000"), 1, replace = F), ]
+# REPLACE WITH MSB:Fish:18794
+
+# Replace PIMRPO MSB:Fish:11167
+control_1991to2000<-pim_pro[ sample( which( pim_pro$combo == "control_1991-2000"), 1, replace = F), ]
+# REPLACE WITH MSB:Fish:30672
+
+# Replace PIMRPO MSB:Fish:30239
+impact_1981to1990<-pim_pro[ sample( which( pim_pro$combo == "impact_1981-1990"), 1, replace = F), ]
+# REPLACE WITH MSB:Fish:6294
+
+# Replace PIMRPO MSB:Fish:3651
+impact_1951to1960<-pim_pro[which( pim_pro$combo == "impact_1951-1960"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace PIMRPO MSB:Fish:94735
+impact_2011to2020<-pim_pro[which( pim_pro$combo == "impact_2011-2020"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
