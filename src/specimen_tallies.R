@@ -478,3 +478,33 @@ impact_1961to1970<-gam_aff[which( gam_aff$combo == "impact_1961-1970"), ]
 impact_1941to1950<-hyb_ama[which( hyb_ama$combo == "impact_1941-1950"), ]
 # NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
 
+# Connor working to identify more needing resampling on 6/13/25
+# Replace GAMAFF MSB:Fish:19232
+impact_1991to2000<-gam_aff[ sample( which( gam_aff$combo == "impact_1991-2000"), 1, replace = F), ]
+# REPLACE WITH MSB:Fish:19170
+
+# Replace PIMPRO MSB:Fish:4429
+control_1971to1980<-pim_pro[ sample( which( pim_pro$combo == "control_1971-1980"), 1, replace = F), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace PIMPRO MSB:Fish:649
+impact_1941to1950<-pim_pro[ sample( which( pim_pro$combo == "impact_1941-1950"), 1, replace = F), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace PIMPRO MSB:Fish:7596
+impact_1981to1990<-pim_pro[ sample( which( pim_pro$combo == "impact_1981-1990"), 1, replace = F), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:7686
+control_1981to1990<-hyb_ama[which( hyb_ama$combo == "control_1981-1990"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:39113
+impact_1991to2000<-hyb_ama[sample(which( hyb_ama$combo == "impact_1991-2000"), 1, replace = F), ]
+# REPLACE WITH MSB:Fish:19537
+
+# Replace PIMRPO MSB:Fish:6294
+impact_1981to1990<-pim_pro[which( pim_pro$combo == "impact_1981-1990"), ]
+# REPLACE WITH MSB:Fish:7917
+
+

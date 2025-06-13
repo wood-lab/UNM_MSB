@@ -16,13 +16,38 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 # Description
 Summary log of leadership and decision activities conducted by leadership team at the University of New Mexico during our 2025 summer CAREER parasite lab work in Albuquerque, New Mexico. 
 
+## Link to Google Spreadsheet
+[Lot selection and tracking spreadsheet](https://docs.google.com/spreadsheets/d/1waDMf6cTmtEeaT_14-uCFXRKaHarc8dxyh9Y7yJx9l0/edit?pli=1&gid=486468529#gid=486468529)
 
 # 6/11/25
-Connor sent resampling lots and numbers to Chelsea who replaced them in the spreadsheet on 6/12/25. 
+Connor sent resampling lots and numbers to Chelsea who replaced them in the spreadsheet on 6/12/25. The lots are as follows:
+MSB:Fish:5253	Gambusia affinis
+MSB:Fish:5247	Hybognathus amarus
+MSB:Fish:5803	Hybognathus amarus
+MSB:Fish:11156 Pimephales promelas
+MSB:Fish:11167	Pimephales promelas
+MSB:Fish:1171	Hybognathus amarus
+MSB:Fish:1150	Hybognathus amarus
+MSB:Fish:3651	Pimephales promelas
+MSB:Fish:30386	Gambusia affinis
+MSB:Fish:30239	Pimephales promelas
+MSB:Fish:19232	Gambusia affinis
+MSB:Fish:73766	Hybognathus amarus
+MSB:Fish:77030	Hybognathus amarus
+MSB:Fish:77021	Hybognathus amarus
+MSB:Fish:94735	Pimephales promelas
 
 # 6/12/25
-Connor found two more lots that need to be resampled. Went back through the code file specimen_tallies.R and checked for resampling options for both GAMAFF 1068 and HYBAMA 1162. Neither of them are able to be replaced as there are no more available lots in the collection for their respective CI category and years. 
+Connor found two more lots that need to be resampled. Went back through the code file specimen_tallies.R and checked for resampling options for both GAMAFF 1068 and HYBAMA 1162. Neither of them are able to be replaced as there are no more available lots in the collection for their respective CI category and years. Connor made note of this in the spreadsheet The lots are as follows:
+MSB:Fish:1068	Gambusia affinis
+MSB:Fish:1162	Hybognathus amarus
 
-
-
+# 6/13/25
+Connor found more lots that needed to be resampled. Connor also went through the list of missing lots and has identified the majority of those that were not found initially, though some are still missing. We have 1 lot that needs to be either found or resampled to send in the shipment to Katie, as well as a few other lots that are missing. The list of missing lots is here:
+MSB:Fish:7917 Pimephales promelas
+MSB:Fish:18794 Pimephales promelas
+MSB:Fish:334 Gambusia affinis
+MSB:Fish:1122	Hybognathus amarus
+MSB:Fish:24944 Hybognathus amarus
+MSB:Fish:39103 Hybognathus amarus
 
