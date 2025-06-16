@@ -515,7 +515,7 @@ impact_1981to1990<-pim_pro[which( pim_pro$combo == "impact_1981-1990"), ]
 control_1951to1960<-gam_aff[which( gam_aff$combo == "control_1951-1960"), ]
 # NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
 
-# Replace PIMPRO MSB:Fish:334
+# Replace PIMPRO MSB:Fish:7917
 impact_1991to2000<-pim_pro[ sample( which( pim_pro$combo == "impact_1991-2000"), 1, replace = F), ]
 # REPLACE WITH MSB:Fish:43375
 
