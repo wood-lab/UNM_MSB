@@ -97,12 +97,26 @@ lots_actual<-lots_with_metadata %>%
 
 View(lots_actual)
 
+count_up<-lots_with_metadata %>%
+  group_by(ScientificName.x) %>%
+  summarize(actual = 5*n())
+  
+  
+# Tally up everything that is not being shipped
+
+dissect_here<-lots_with_metadata %>%
+filter(SHIP_REQUEST != "x") %>%
+  group_by(ScientificName.x) %>%
+  summarize(actual = 5*n())
+  
+sum(dissect_here$actual)
+
 
 # I checked lots_actual against the database, and it looks like we have pulled everything it is possible to pull!
 # The only chance of filling in gaps is finding uncatalogued specimens. I'll take a quick look and see if any of the
 # old jars are by chance not catalogued.
 
-
+# No uncatalogued lots to be found!
 
 
 
