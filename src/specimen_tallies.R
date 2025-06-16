@@ -524,3 +524,4 @@ control_1991to2000<-pim_pro[ sample( which( pim_pro$combo == "control_1991-2000"
 # REPLACE WITH MSB:Fish:18935
 
 
+
