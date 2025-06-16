@@ -523,5 +523,13 @@ impact_1991to2000<-pim_pro[ sample( which( pim_pro$combo == "impact_1991-2000"),
 control_1991to2000<-pim_pro[ sample( which( pim_pro$combo == "control_1991-2000"), 1, replace = F), ]
 # REPLACE WITH MSB:Fish:18935
 
+# Replace HYBAMA MSB:Fish:1122
+impact_1931to1940<-hyb_ama[which( hyb_ama$combo == "impact_1931-1940"), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+# Replace HYBAMA MSB:Fish:24944
+impact_1991to2000<-hyb_ama[ sample( which( hyb_ama$combo == "impact_1991-2000"), 10, replace = F), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
 
 
