@@ -149,19 +149,19 @@ meta_data$combo<-paste(meta_data$CI,meta_data$decade,sep="_")
 
 # Download latest file 
 
-pim_vig_today<-read.csv("data/raw/Pimephales_vigilax_Datasheet_2024.06.25.csv")
-length(pim_vig_today$CatalogNumber)
+hyb_ama_today<-read.csv("data/HYBAMA Data_2025.06.20.csv")
+length(hyb_ama_today$Individual_MSB.Fish_Catalog_Number)
 
 # Now merge dissection data with meta-data (all.x makes sure that you keep all individual fish from the same lot, even though
 # they have the same catalog number).
 
-pim_vig_with_metadata<-merge(pim_vig_today, meta_data, by.x = "CatalogNumber", by.y = "CatalogNumber", all.x = TRUE)
-length(pim_vig_with_metadata$CatalogNumber)
+hyb_ama_with_metadata<-merge(hyb_ama_today, meta_data, by.x = "Individual_MSB.Fish_Catalog_Number", by.y = "CatalogNumber", all.x = TRUE)
+length(hyb_ama_with_metadata$Individual_MSB.Fish_Catalog_Number)
 
 
 # Plot to see where the dissected fish fall
 
-plot(jitter(pim_vig_with_metadata$Latitude.y,30)~jitter(pim_vig_with_metadata$YearCollected.y,5))+abline(a = 30.76, b = 0, lty = 2)+abline(v = 1973, lty = 2)
+plot(jitter(hyb_ama_with_metadata$Latitude.y,30)~jitter(hyb_ama_with_metadata$YearCollected.y,5))
 
 
 # Desired level of replication
