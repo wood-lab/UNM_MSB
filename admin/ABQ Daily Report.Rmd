@@ -190,7 +190,6 @@ hyb_ama_remaining<-merge(hyb_ama_desired, hyb_ama_actual, by.x = "combo", by.y =
 # Calculate how many you have left
 
 hyb_ama_remaining$to_go<-(hyb_ama_remaining$individual_fish_desired-ifelse(is.na(hyb_ama_remaining$actual),0,hyb_ama_remaining$actual))
-hyb_ama_remaining<-na.omit(hyb_ama_remaining)
 sum(hyb_ama_remaining$actual,na.rm=T)
 sum(hyb_ama_remaining$to_go,na.rm=T)
 
