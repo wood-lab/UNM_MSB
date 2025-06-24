@@ -536,6 +536,9 @@ impact_1991to2000<-hyb_ama[ sample( which( hyb_ama$combo == "impact_1991-2000"),
 control_1981to1990<-hyb_ama[ sample( which( hyb_ama$combo == "control_1981-1990"), 10, replace = F), ]
 # NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
 
+# Need to resample a lot of hybama 6/24/25
+Lot 5272 does not have big enough fish, and there are no remaining lots for control 1981-1990, so we will skip this lot.
+
 
 
 
