@@ -193,4 +193,7 @@ pim_vig_dailies<-pim_vig_with_metadata %>%
   summarize(actual = n())
 
 
+# Need to resample a lot of hybama 6/24/25
+Lot 5272 does not have big enough fish, and there are no remaining lots for control 1981-1990, so we will skip this lot. 
+
 

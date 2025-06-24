@@ -531,5 +531,12 @@ impact_1931to1940<-hyb_ama[which( hyb_ama$combo == "impact_1931-1940"), ]
 impact_1991to2000<-hyb_ama[ sample( which( hyb_ama$combo == "impact_1991-2000"), 10, replace = F), ]
 # NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
 
+# 6/24/25
+# Replace HYBAMA MSB:Fish:5272
+control_1981to1990<-hyb_ama[ sample( which( hyb_ama$combo == "control_1981-1990"), 10, replace = F), ]
+# NOT ENOUGH LOTS FOR REPLACEMENT - SKIP
+
+
+
 
 
