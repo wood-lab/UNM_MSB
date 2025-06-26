@@ -149,9 +149,12 @@ View(meta_data)
 ### HYBAMA
 
 # Download latest file 
-
-hyb_ama_today<-read.csv("data/HYBAMA Data_2025.06.23.csv")
+```{r}
+hyb_ama_today<-read.csv("data/HYBAMA Data_2025.06.26.csv")
 length(hyb_ama_today$CatalogNumber)
+```
+
+
 
 # Now merge dissection data with meta-data (all.x makes sure that you keep all individual fish from the same lot, even though
 # they have the same catalog number).
@@ -205,7 +208,7 @@ plot(hyb_ama_with_metadata$Total_Length_mm~hyb_ama_with_metadata$Latitude)
 # Create a matrix that shows how many fish you are finishing per day
 
 hyb_ama_dailies<-hyb_ama_with_metadata %>%
-  group_by(Dissection_Date) %>%
+  group_by(Completion_Date) %>%
   summarize(actual = n())
 
 
