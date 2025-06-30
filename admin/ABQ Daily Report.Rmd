@@ -120,17 +120,9 @@ filter(SHIP_REQUEST != "x") %>%
 sum(dissect_here$actual)
 ```
 
-
-
-
 I checked lots_actual against the database, and it looks like we have pulled everything it is possible to pull!
 The only chance of filling in gaps is finding uncatalogued specimens. I'll take a quick look and see if any of the old jars are by chance not cataloged.
 - No uncatalogued lots to be found!
-
-
-
-
-
 
 ### Code for doing daily checks
 
@@ -146,23 +138,14 @@ View(meta_data)
 
 
 ### HYBAMA
-
 <<<<<<< HEAD
-Download latest file 
-```{r}
-hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.06.23.csv"))
-length(hyb_ama_today$CatalogNumber)
-```
 =======
 # Download latest file 
 ```{r}
-hyb_ama_today<-read.csv("data/HYBAMA Data_2025.06.26.csv")
+hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.06.30.csv"))
+                        
 length(hyb_ama_today$CatalogNumber)
 ```
-
-
->>>>>>> d5985e954e2aecf597a2cc14b553b45fd946bece
-
 
 Now merge dissection data with meta-data (all.x makes sure that you keep all individual fish from the same lot, even though they have the same catalog number).
 ```{r}
@@ -174,7 +157,7 @@ View(hyb_ama_with_metadata)
 
 Plot to see where the dissected fish fall
 ```{r}
-plot(jitter(hyb_ama_with_metadata$Latitude,30)~jitter(hyb_ama_with_metadata$YearCollected,5))
+plot(jitter(hyb_ama_with_metadata$Latitude,30)~jitter(hyb_ama_with_metadata$YearCollected,5))+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
 ```
 
 
