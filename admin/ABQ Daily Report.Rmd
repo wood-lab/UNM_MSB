@@ -213,3 +213,7 @@ Lot 5272 does not have big enough fish, and there are no remaining lots for cont
 # 6/30/25
 Replace HYBAMA MSB:Fish:18820 -- impact_1991to2000: replace with MSB:Fish:19001 --- too small, replace with MSB:Fish:30075
 
+# 7/2/25
+Replace HYBAMA MSB:Fish:30401 (too few fish in the jar) -- impact_1991to2000 replace with MSB:Fish:20390
+
+

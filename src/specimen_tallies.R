@@ -544,8 +544,10 @@ control_1981to1990<-hyb_ama[ sample( which( hyb_ama$combo == "control_1981-1990"
 impact_1991to2000<-hyb_ama[ sample( which( hyb_ama$combo == "impact_1991-2000"), 10, replace = F), ]
 # replace with MSB:Fish:19001 --- too small, replace with MSB:Fish:30075
 
-
-
+# 7/2/25
+# Replace HYBAMA MSB:Fish:30401 (too few fish in the jar)
+impact_1991to2000<-hyb_ama[ sample( which( hyb_ama$combo == "impact_1991-2000"), 20, replace = F), ]
+# replace with MSB:Fish:20390
 
 
 
