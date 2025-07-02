@@ -1,0 +1,25 @@
+---
+title: "Fish Body Size BACI Study"
+author: "Eliana Ortega, Gabby Commisso"
+date: "2025-07-02"
+output:
+  html_document:
+    theme: readable
+    highlight: textmate
+    toc: true
+    toc_float: true
+    toc_depth: 3
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Overview
+This working script is written to determine if fishes held at the University of New Mexico Museum of Southwestern Biology, dissected for the 2025 Wood Lab CAREER parasite ecology lab work, show any relationship between size, time, and control/impact factor. 
+
+
+## Pull in Data
+```{r data_importing}
+#HYBAMA
+
+```
