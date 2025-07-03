@@ -29,14 +29,18 @@ library(ggplot2)
 Next, we import the most up-to-date data
 ```{r data_importing}
 #HYBAMA
-hybama_today<-read.csv(here("data", "HYBAMA Data_2025.07.02.csv"))
+meta_data<-read.csv(here("data", "all_lots_okay_to_dissect.csv"))
+meta_data$combo<-paste(meta_data$CI,meta_data$decade,sep="_")
+hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.07.02.csv"))
+hyb_ama_with_metadata<-merge(hyb_ama_today, meta_data, by = "CatalogNumber", all.x = TRUE)
+
+hybama_today <- hyb_ama_with_metadata %>% 
+  janitor::clean_names()
 view(hybama_today)
 ```
 
 ## Data Exploration
 We're interested in seeing if there is a relationship between year collected and fish body size. Let's make a plot to visualize:
 ```{r data_exploration_sizevstime}
-hybama_today <- hybama_today %>% 
-  mutate(Date_Fish_Collected = as.Date(Date_Fish_Collected))
-ggplot(data=hybama_today, aes(Date_Fish_Collected,Standard_Length_mm)) + geom_point() 
+ggplot(data=hybama_today, aes(year_collected,standard_length_mm)) + geom_point() 
 ```
