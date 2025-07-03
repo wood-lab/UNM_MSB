@@ -42,5 +42,5 @@ view(hybama_today)
 ## Data Exploration
 We're interested in seeing if there is a relationship between year collected and fish body size. Let's make a plot to visualize:
 ```{r data_exploration_sizevstime}
-ggplot(data=hybama_today, aes(year_collected,standard_length_mm)) + geom_point() 
+ggplot(data=hybama_today, aes(year_collected,weight_mg)) + geom_point() 
 ```
