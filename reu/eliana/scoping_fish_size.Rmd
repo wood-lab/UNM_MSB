@@ -18,8 +18,25 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 This working script is written to determine if fishes held at the University of New Mexico Museum of Southwestern Biology, dissected for the 2025 Wood Lab CAREER parasite ecology lab work, show any relationship between size, time, and control/impact factor. 
 
 
-## Pull in Data
+## Initial Steps
+First, we load all required packages. 
+```{r load_packages}
+library(here)
+library(tidyverse)
+library(ggplot2)
+```
+
+Next, we import the most up-to-date data
 ```{r data_importing}
 #HYBAMA
+hybama_today<-read.csv(here("data", "HYBAMA Data_2025.07.02.csv"))
+view(hybama_today)
+```
 
+## Data Exploration
+We're interested in seeing if there is a relationship between year collected and fish body size. Let's make a plot to visualize:
+```{r data_exploration_sizevstime}
+hybama_today <- hybama_today %>% 
+  mutate(Date_Fish_Collected = as.Date(Date_Fish_Collected))
+ggplot(data=hybama_today, aes(Date_Fish_Collected,Standard_Length_mm)) + geom_point() 
 ```
