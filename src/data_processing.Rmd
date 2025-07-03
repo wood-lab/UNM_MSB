@@ -57,11 +57,14 @@ Now merge dissection data with meta-data (all.x makes sure that you keep all ind
 hybama_with_metadata<-merge(hybama_today, meta_data, by.x = "CatalogNumber", by.y = "CatalogNumber", all.x = TRUE)
 length(hybama_with_metadata$CatalogNumber)
 ```
-Let's make this dataset tidy! Making headers consistant, removing unnecessary columns, etc
+Let's make this dataset tidy! Making headers consistent, removing unnecessary columns, etc
 ```{r tidy_hybama}
 hybama_with_metadata <- hybama_with_metadata %>% 
   janitor::clean_names()
-view(hybama_with_metadata)
+
+hybama_with_metadata_tidy <- hybama_with_metadata %>% 
+  select(-c(73:132))
+view(hybama_with_metadata_tidy)
 ```
 
 Plot to see where the dissected fish fall.
