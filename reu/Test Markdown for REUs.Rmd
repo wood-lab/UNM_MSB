@@ -1,0 +1,42 @@
+---
+title: "TEST 4 REUS"
+author: "Connor Whalen"
+date: "2025-07-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Type like this makes normal type.
+
+To code: option+command+i
+
+Install packages
+```{r}
+install.packages("tidyverse")
+install.packages("janitor")
+```
+
+Load packages
+```{r}
+library(tidyverse)
+```
+
+Load Data
+```{r}
+data <- read_csv("data/all_lots_okay_to_dissect.csv") %>% 
+  janitor::clean_names() 
+```
+
+
+Filter our data
+```{r}
+hybama_only <- data %>% 
+  filter(scientific_name %in% c("Hybognathus amarus"))
+```
+
+
+
