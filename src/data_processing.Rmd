@@ -81,10 +81,11 @@ hybama_headers<-ls(hybama_with_metadata_tidy)
 hybama_headers<-as.factor(hybama_headers)
 ```
 
-Add parasites across organs and double what needs to be doubled.
+##Add parasites across organs and double what needs to be doubled.
 Notes:
-- We are not counting anything vouchered as CYST.UNK as a parasite
-
+- cyst.unk is NOT a parasite
+- trem_unk_conn and trem_unk_flush are columns of entirely zeros, so were not included in this
+- myxo.susp was determined to be NOT a parasite
 ```{r hybama_parasites}
 mono.gyro<-2*(hybama_with_metadata_tidy$mono_gyro_pectoralfin)+2*(hybama_with_metadata_tidy$mono_gyro_pelvicfin)+hybama_with_metadata_tidy$mono_gyro_analfin+hybama_with_metadata_tidy$mono_gyro_caudalfin+hybama_with_metadata_tidy$mono_gyro_dorsalfin+2*(hybama_with_metadata_tidy$mono_gyro_gill)+hybama_with_metadata_tidy$mono_gyro_flush
 
@@ -94,176 +95,109 @@ cope.lern <- 2*(hybama_with_metadata_tidy$cope_lern_pelvicfin)+hybama_with_metad
 
 cope.imler <- hybama_with_metadata_tidy$cope_imler_analfin
 
-trem.meta.unk <- hybama_with_metadata_tidy$trem_meta_unk_caudalfin + hybama_with_metadata_tidy$trem_meta_unk_caudalfin
+trem.meta.unk <- hybama_with_metadata_tidy$trem_meta_unk_caudalfin + hybama_with_metadata_tidy$trem_meta_unk_caudalfin + 2*(hybama_with_metadata_tidy$meta_unk_gill)
 
 trem.diplo <- hybama_with_metadata_tidy$trem_diplo_liver + 2*(hybama_with_metadata_tidy$trem_diplo_eye) + hybama_with_metadata_tidy$trem_diplo_conn + hybama_with_metadata_tidy$trem_diplo_flush
 
-ACANTH.BIGB<-pim_vig_with_metadata$ACANTH.BIGB.Intestine            
-ACANTH.BKR<-pim_vig_with_metadata$ACANTH.BKR.Intestine            
-CEST.COMP<-(as.numeric(pim_vig_with_metadata$CEST.COMP.FLUSH)+pim_vig_with_metadata$CEST.COMP.Intestine)              
-CEST.GODZ<-pim_vig_with_metadata$cest.godz.intestine
-CEST.L<-pim_vig_with_metadata$CEST.L.FLUSH                   
-CEST.NTG<-pim_vig_with_metadata$CEST.NTG.INTESTINE         
-CEST.PEA<-pim_vig_with_metadata$CEST.PEA.Intestine               
-CEST.UNK<-(pim_vig_with_metadata$CEST.UNK.Intestine)           
-CEST.VIT<-(pim_vig_with_metadata$CEST.VIT.INTESTINE)
-COPE.CL<-2*(pim_vig_with_metadata$COPE.CL.GILL)               
-COPE.GRAB<-2*(pim_vig_with_metadata$COPE.GRAB.GILL)                   
-# not a parasite: CYST.EMPTY<-(pim_vig_with_metadata$CYST.EMPTY.ConnectiveTissue+as.numeric(pim_vig_with_metadata$CYST.EMPTY.Stomach))              
-# not a parasite: CYST.LB<-2*(pim_vig_with_metadata$CYST.LB.EYE+pim_vig_with_metadata$CYST.LB.GILL)                  
-# not a parasite: CYST.UNK<-(pim_vig_with_metadata$CYST.UNK.AnalFin+pim_vig_with_metadata$CYST.UNK.CaudalFin+
-             #pim_vig_with_metadata$CYST.UNK.CONNECTIVETISSUES+pim_vig_with_metadata$CYST.UNK.DorsalFin+
-             #(2*pim_vig_with_metadata$CYST.UNK.Eye)+pim_vig_with_metadata$CYST.UNK.Flush+
-             #pim_vig_with_metadata$CYST.UNK.intestines+as.numeric(pim_vig_with_metadata$CYST.UNK.Kidney)+
-             #pim_vig_with_metadata$CYST.UNK.LIVER+(2*pim_vig_with_metadata$CYST.UNK.PectoralFin)+
-             #as.numeric(pim_vig_with_metadata$CYST.UNK.PelvicFin)+(2*pim_vig_with_metadata$cyst.unkn.gill))                   
-META.HS<-pim_vig_with_metadata$META.HS.CaudalFin                
-META.UNK<-(pim_vig_with_metadata$META.UNK.AnalFin+pim_vig_with_metadata$META.UNK.CAUDALFIN+
-             as.numeric(pim_vig_with_metadata$META.UNK.DorsalFin)+(2*pim_vig_with_metadata$META.UNK.EYE)+
-             pim_vig_with_metadata$META.UNK.FLUSH+(2*pim_vig_with_metadata$META.UNK.GILL)+
-             as.numeric(pim_vig_with_metadata$META.UNK.LIVER)+(2*pim_vig_with_metadata$META.UNK.PectoralFin)+
-             (2*as.numeric(pim_vig_with_metadata$META.UNK.PelvicFin))+pim_vig_with_metadata$meta.unkn.connectivetissue+
-             pim_vig_with_metadata$meta.unkn.intestine)
-MONO.DACT<-(2*pim_vig_with_metadata$MONO.DACT.GILL)              
-MONO.GYRO<-pim_vig_with_metadata$MONO.GYRO.Flush+(2*pim_vig_with_metadata$MONO.GYRO.Gill)              
-MONO.LG<-2*(pim_vig_with_metadata$MONO.LG.Gill+pim_vig_with_metadata$MONO.LG.PectoralFin)           
+trem.d <- hybama_with_metadata_tidy$trem_d_liver + hybama_with_metadata_tidy$trem_d_conn + hybama_with_metadata_tidy$trem_d_flush
 
-# Not a parasite: MYX.GEOM<-pim_vig_with_metadata$MYX.GEOM.Flush+pim_vig_with_metadata$MYX.GEOM.Intestines  
+trem.gold <- hybama_with_metadata_tidy$trem_gold_liver + hybama_with_metadata_tidy$trem_gold_conn
 
-### MYX.GO were found in many organs. Sometimes, those were organs that were not found in all fish
-### (e.g., gonads). However, even if the gonads (or spleen, or heart) were too small to ID, we feel confident that
-### we would have seen myxozoan cysts in those organs, even if the organs themselves were just perceived as part 
-### of the visceral mush inside of fish. Therefore, it wouldn't be appropriate to propagate NAs across the entire
-### MYX.GO count within a fish (across organs). The code below allows the sum of MYX.GO within an individual
-### fish ignore the NAs, and therefore provide a total number of MYX.GO cysts regardless of whether one of the organs
-### was "missing".
+trem.em <- hybama_with_metadata_tidy$trem_em_eye 
 
-pim_vig_with_metadata$MYX.GO.Eye.DUB<-2*pim_vig_with_metadata$MYX.GO.Eye
-pim_vig_with_metadata$MYX.GO.GONAD<-as.numeric(pim_vig_with_metadata$MYX.GO.GONAD)
-pim_vig_with_metadata$MYX.GO.Kidney<-as.numeric(pim_vig_with_metadata$MYX.GO.Kidney)
+trem.l <- hybama_with_metadata_tidy$trem_l_conn + hybama_with_metadata_tidy$trem_l_flush
 
-MYX.GO<-rowSums(pim_vig_with_metadata[,c("MYX.GO.CONNECTIVETISSUE","MYX.GO.Eye.DUB",
-                                            "MYX.GO.GONAD","MYX.GO.Kidney")], na.rm=TRUE)
-            
-MYX.THEL<-(2*pim_vig_with_metadata$MYX.THEL.PectoralFin)+pim_vig_with_metadata$MYXO.THEL.CaudalFin+
-  pim_vig_with_metadata$MYXO.THEL.ConnectiveTissue+as.numeric(pim_vig_with_metadata$MYXO.THEL.dorsalFIN)+
-  (2*pim_vig_with_metadata$MYXO.THEL.GILL)+pim_vig_with_metadata$myxo.thel.Skin   
-MYXO.BC<-(2*pim_vig_with_metadata$MYXO.BC.GILL)                  
-MYXO.SBAD<-(pim_vig_with_metadata$MYXO.SBAD.ConnectiveTissue+(2*pim_vig_with_metadata$MYXO.SBAD.GILL))                   
-MYXO.UNK<-pim_vig_with_metadata$MYXO.UNK.Connective.Tissue+(2*pim_vig_with_metadata$MYXO.UNK.GILL)                  
-MYXO.UP<-(2*pim_vig_with_metadata$MYXO.UP.Eye)               
-NEM.CAP<-pim_vig_with_metadata$NEM.CAP.Intestine                
-NEM.CONA<-pim_vig_with_metadata$NEM.CONA.CONNECTIVETISSUES+pim_vig_with_metadata$NEM.CONA.Intestine               
-NEM.DICH<-pim_vig_with_metadata$NEM.DICH.Intestine    
-NEM.LARV<-pim_vig_with_metadata$NEM.LARV.Flush+pim_vig_with_metadata$NEM.LARV.Intestine+
-  pim_vig_with_metadata$NEM.CYST.CONNECTIVETISSUE
-NEM.TRBK<-pim_vig_with_metadata$NEM.TRBK.intestine               
-NEM.UNK<-pim_vig_with_metadata$NEM.UNK.Intestine                
-TREM.BUC<-pim_vig_with_metadata$trem.buc.AnalFin+pim_vig_with_metadata$trem.buc.CaudalFin+
-  pim_vig_with_metadata$TREM.BUC.DorsalFin+(2*pim_vig_with_metadata$TREM.BUC.PectoralFin)            
+trem.b <- hybama_with_metadata_tidy$trem_b_conn + hybama_with_metadata_tidy$trem_b_flush
 
+trem.dlum <- hybama_with_metadata_tidy$trem_dlum_flush
 
-### TREM.MET were found in many organs. Sometimes, those were organs that were not found in all fish
-### (e.g., gonads). However, even if the gonads (or spleen, or heart) were too small to ID, we feel confident that
-### we would have seen metacercariae in those organs, even if the organs themselves were just perceived as part 
-### of the visceral mush inside of fish. Therefore, it wouldn't be appropriate to propagate NAs across the entire
-### TREM.MET count within a fish (across organs). The code below allows the sum of TREM.MET within an individual
-### fish ignore the NAs, and therefore provide a total number of metacercariae regardless of whether one of the organs
-### was "missing".
+trem.ridge <- hybama_with_metadata_tidy$trem_ridge_flush
 
-pim_vig_with_metadata$TREM.MET.EYE.DUB<-2*pim_vig_with_metadata$TREM.MET.EYE
-pim_vig_with_metadata$TREM.MET.GILL.DUB<-2*pim_vig_with_metadata$TREM.MET.GILL
-pim_vig_with_metadata$TREM.MET.Kidney<-as.numeric(pim_vig_with_metadata$TREM.MET.Kidney)
-pim_vig_with_metadata$TREM.MET.LIVER<-as.numeric(pim_vig_with_metadata$TREM.MET.LIVER)
-pim_vig_with_metadata$TREM.MET.Spleen<-as.numeric(pim_vig_with_metadata$TREM.MET.Spleen)
+nem.cl <- hybama_with_metadata_tidy$nem_cl_int
 
-TREM.MET<-rowSums(pim_vig_with_metadata[,c("TREM.MET.BodyCavity","TREM.MET.CaudalFin",
-                                         "TREM.MET.ConnectiveTissue","TREM.MET.EYE.DUB",
-                                         "TREM.MET.FLUSH","TREM.MET.GILL","TREM.MET.Intestine",
-                                         "TREM.MET.Kidney","TREM.MET.LIVER","TREM.MET.Spleen",
-                                         "TREM.MET.Stomach")], na.rm=TRUE)
+nem.unk <- hybama_with_metadata_tidy$nema_unk_int
 
-TREM.METAF<-(2*pim_vig_with_metadata$TREM.MET.AF.PectoralFin)+
-  pim_vig_with_metadata$TREM.METAF.AnalFin+pim_vig_with_metadata$trem.metaf.caudalfin+
-  (2*pim_vig_with_metadata$TREM.METAF.EYE)+pim_vig_with_metadata$TREM.METAF.FLUSH+
-  (2*pim_vig_with_metadata$TREM.METAF.GILL)+(2*as.numeric(pim_vig_with_metadata$TREM.METAF.PelvicFin))
+mono.dact <- 2*(hybama_with_metadata_tidy$mono_dact_gill)
 
-### TREM.METAGS were found in many organs. Sometimes, those were organs that were not found in all fish
-### (e.g., gonads). However, even if the gonads (or spleen, or heart) were too small to ID, we feel confident that
-### we would have seen metacercariae in those organs, even if the organs themselves were just perceived as part 
-### of the visceral mush inside of fish. Therefore, it wouldn't be appropriate to propagate NAs across the entire
-### TREM.METAGS count within a fish (across organs). The code below allows the sum of TREM.METAGS within an individual
-### fish to ignore the NAs, and therefore provide a total number of metacercariae regardless of whether one of the organs
-### was "missing".
+myxo.b <- 2*(hybama_with_metadata_tidy$myxo_b_gill)
+```
 
-pim_vig_with_metadata$TREM.METAGS.GILL.DUB<-2*pim_vig_with_metadata$TREM.METAGS.GILL
-pim_vig_with_metadata$TREM.METAGS.Kidney<-as.numeric(pim_vig_with_metadata$TREM.METAGS.Kidney)
-pim_vig_with_metadata$TREM.METAGS.Liver<-as.numeric(pim_vig_with_metadata$TREM.METAGS.Liver)
+Quickly evaluating relationship between total length and weight to check for any potential abnormalities.
+```{r hybama_weight_check}
+ggplot(hybama_with_metadata_tidy,aes(total_length_mm,weight_mg))+
+  geom_point(size=4)
+```
+Looks good!
 
-TREM.METAGS<-rowSums(pim_vig_with_metadata[,c("TREM.METAGS.AnalFin","TREM.METAGS.CaudalFin",
-                                           "TREM.METAGS.CONNECTIVETISSUE","TREM.METAGS.FLUSH",
-                                           "TREM.METAGS.GILL.DUB","TREM.METAGS.Intestine","TREM.METAGS.Kidney",
-                                           "TREM.METAGS.Liver","TREM.METAGS.SKIN","TREM.METAGS.Stomach")], na.rm=TRUE)
+##Putting it all together
 
-TREM.MS<-pim_vig_with_metadata$TREM.MS.FLUSH                    
-TREM.NEA<-pim_vig_with_metadata$TREM.NEA.CONNECTIVETISSUE+pim_vig_with_metadata$TREM.NEA.FLUSH+
-  pim_vig_with_metadata$TREM.NEA.Intestine+pim_vig_with_metadata$TREM.NEA.LIVER                   
-TREM.RNDA<-pim_vig_with_metadata$TREM.RNDA.FLUSH+pim_vig_with_metadata$TREM.RNDA.Intestine              
-TREM.SSS<-(2*pim_vig_with_metadata$TREM.SSS.GILL)
-TREM.UNK<-pim_vig_with_metadata$TREM.UNK.CONNECTIVETISSUE+pim_vig_with_metadata$TREM.UNK.FLUSH
-# not a parasite: WORM.A<-pim_vig_with_metadata$WORM.A.Flush              
+Put the columns into one dataframe...
+```{r hybama_all_together_now}
+hybama_processed_data<-cbind.data.frame(
+  hybama_with_metadata_tidy$catalog_number,
+  hybama_with_metadata_tidy$year_fish_collected,        
+  hybama_with_metadata_tidy$month_collected, 
+  hybama_with_metadata_tidy$day_fish_collected,         
+  hybama_with_metadata_tidy$individual_id,
+  hybama_with_metadata_tidy$fish_barcode,
+  hybama_with_metadata_tidy$dissector,
+  hybama_with_metadata_tidy$examiner, 
+  hybama_with_metadata_tidy$dissection_date, 
+  hybama_with_metadata_tidy$sex, 
+  hybama_with_metadata_tidy$total_length_mm, 
+  hybama_with_metadata_tidy$standard_length_mm,
+  hybama_with_metadata_tidy$weight_mg, 
+  hybama_with_metadata_tidy$ci, 
+  hybama_with_metadata_tidy$combo, 
+  hybama_with_metadata_tidy$latitude, 
+  hybama_with_metadata_tidy$longitude, 
+  cope.imler, 
+  cope.lern, 
+  mono.dact, 
+  mono.gyro, 
+  myxo.b, 
+  nem.cl, 
+  nem.unk, 
+  trem.b, 
+  trem.d, 
+  trem.diplo, 
+  trem.dlum, 
+  trem.em, 
+  trem.fim, 
+  trem.gold, 
+  trem.l, 
+  trem.meta.unk, 
+  trem.ridge)
 
 ```
 
-# Need to fix the masses of fish, because they are one decimal point off.
 
-pim_vig_with_metadata$Weight_mg<-(10*as.numeric(pim_vig_with_metadata$Weight_mg))
+Name the columns...
+```{r hybama_columns}
+colnames(hybama_processed_data)[1]<-"CatalogNumber"
+colnames(hybama_processed_data)[2]<-"YearCollected"
+colnames(hybama_processed_data)[3]<-"MonthCollected"
+colnames(hybama_processed_data)[4]<-"DayCollected"
+colnames(hybama_processed_data)[5]<-"IndividualFishID"
+colnames(hybama_processed_data)[6] <- "FishBarcode"
+colnames(hybama_processed_data)[7]<-"Dissector"
+colnames(hybama_processed_data)[8] <- "Examiner"
+colnames(hybama_processed_data)[9]<-"DissectionDate"
+colnames(hybama_processed_data)[10]<-"Sex"
+colnames(hybama_processed_data)[11]<-"TotalLength_mm"
+colnames(hybama_processed_data)[12]<-"StandardLength_mm"
+colnames(hybama_processed_data)[13]<-"Weight_mg"
+colnames(hybama_processed_data)[14]<-"CI"
+colnames(hybama_processed_data)[15]<-"combo"
+colnames(hybama_processed_data)[16]<-"Latitude"
+colnames(hybama_processed_data)[17]<-"Longitude"
 
-# Evaluate relationship between total length and weight.
-# ggplot(pim_vig_with_metadata,aes(TotalLength_mm,Weight_mg))+
-#geom_point(size=4)
+view(hybama_processed_data)
+```
 
-# Now put it all together
+One of the fish was named wrong, and doesn't have metadata associated with it! Uh oh...
 
-pim_vig_processed_data<-cbind.data.frame(pim_vig_with_metadata$CatalogNumber,pim_vig_with_metadata$YearCollected.x,
-                              pim_vig_with_metadata$MonthCollected.x,pim_vig_with_metadata$DayCollected.x,
-                              pim_vig_with_metadata$IndividualFishID,pim_vig_with_metadata$Dissector_and_Examiner,
-                              pim_vig_with_metadata$DissectionDate,pim_vig_with_metadata$Sex,
-                              pim_vig_with_metadata$TotalLength_mm,pim_vig_with_metadata$StandardLength_mm,
-                              pim_vig_with_metadata$Weight_mg, pim_vig_with_metadata$CI.y,
-                              pim_vig_with_metadata$combo,
-                              pim_vig_with_metadata$Latitude.y,
-                              pim_vig_with_metadata$Longitude.y,ACANTH.BIGB,ACANTH.BKR,            
-                              CEST.COMP,CEST.GODZ,CEST.L,CEST.NTG,CEST.PEA,CEST.UNK,CEST.VIT,COPE.CL,COPE.GRAB,
-                              META.HS,META.UNK,MONO.DACT,MONO.GYRO,MONO.LG,MYX.GO,MYX.THEL,
-                              MYXO.BC,MYXO.SBAD,MYXO.UNK,MYXO.UP,NEM.CAP,NEM.CONA,NEM.DICH,NEM.LARV,NEM.TRBK,
-                              NEM.UNK,TREM.BUC,TREM.MET,TREM.METAF,TREM.METAGS,TREM.MS,TREM.NEA,TREM.RNDA,
-                              TREM.SSS,TREM.UNK)
-
-
-# Name the columns
-
-colnames(pim_vig_processed_data)[1]<-"CatalogNumber"
-colnames(pim_vig_processed_data)[2]<-"YearCollected"
-colnames(pim_vig_processed_data)[3]<-"MonthCollected"
-colnames(pim_vig_processed_data)[4]<-"DayCollected"
-colnames(pim_vig_processed_data)[5]<-"IndividualFishID"
-colnames(pim_vig_processed_data)[6]<-"Dissector_and_Examiner"
-colnames(pim_vig_processed_data)[7]<-"DissectionDate"
-colnames(pim_vig_processed_data)[8]<-"Sex"
-colnames(pim_vig_processed_data)[9]<-"TotalLength_mm"
-colnames(pim_vig_processed_data)[10]<-"StandardLength_mm"
-colnames(pim_vig_processed_data)[11]<-"Weight_mg"
-colnames(pim_vig_processed_data)[12]<-"CI"
-colnames(pim_vig_processed_data)[13]<-"combo"
-colnames(pim_vig_processed_data)[14]<-"Latitude"
-colnames(pim_vig_processed_data)[15]<-"Longitude"
-
-
-# Looks like meta-data (CI and combo) are missing for four of the fish
-
-# It looks like meta-data are missing for some of the fish.
-
+```{r fix_hybama_metadata}
 stuff<-pim_vig_processed_data %>%
   filter(is.na(combo))
 
@@ -277,6 +211,8 @@ stuff<-pim_vig_processed_data %>%
 
 pim_vig_processed_data$Latitude[pim_vig_processed_data$CatalogNumber=="157327"]<-30.19778
 pim_vig_processed_data$Longitude[pim_vig_processed_data$CatalogNumber=="157327"]<--89.65611
+
+```
 
 # Some of the weights are screwy. Connor and Jolee discovered this during their exploration of fish body size.
 # Replace weird weights with NAs.
