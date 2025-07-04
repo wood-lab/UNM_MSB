@@ -1,5 +1,5 @@
 ---
-  title: "Processing Data from Raw to Analyzable Form"
+title: "Processing Data from Raw to Analyzable Form"
 author: "Chelsea Wood, Gabby Commisso, Connor Whalen"
 date: "June-August 2025"
 output:
@@ -64,20 +64,39 @@ hybama_with_metadata <- hybama_with_metadata %>%
 
 hybama_with_metadata_tidy <- hybama_with_metadata %>% 
   select(-c(73:132))
+
+hybama_with_metadata_tidy <- hybama_with_metadata_tidy %>% 
+  select (-c(fish_species_1, fish_barcode_1, msb_fish_catalog_number, tissues, island, island_group, verbatim_elevation, lat_long_comments))
+
 view(hybama_with_metadata_tidy)
 ```
 
 Plot to see where the dissected fish fall.
 ```{r hybama_test}
-plot(jitter(hybama_with_metadata$latitude,30)~jitter(hybama_with_metadata$year_collected,5))+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
+plot(jitter(hybama_with_metadata_tidy$latitude,30)~jitter(hybama_with_metadata$year_collected,5))+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
 
-str(hybama_with_metadata)
+str(hybama_with_metadata_tidy)
 
-hybama_headers<-ls(hybama_with_metadata)
+hybama_headers<-ls(hybama_with_metadata_tidy)
 hybama_headers<-as.factor(hybama_headers)
 ```
 
 Add parasites across organs and double what needs to be doubled.
+Notes:
+- We are not counting anything vouchered as CYST.UNK as a parasite
+
+```{r hybama_parasites}
+mono.gyro<-2*(hybama_with_metadata_tidy$mono_gyro_pectoralfin)+2*(hybama_with_metadata_tidy$mono_gyro_pelvicfin)+hybama_with_metadata_tidy$mono_gyro_analfin+hybama_with_metadata_tidy$mono_gyro_caudalfin+hybama_with_metadata_tidy$mono_gyro_dorsalfin+2*(hybama_with_metadata_tidy$mono_gyro_gill)+hybama_with_metadata_tidy$mono_gyro_flush
+
+trem.fim <- 2*(hybama_with_metadata_tidy$trem_fim_pectoralfin)+hybama_with_metadata_tidy$trem_fim_caudalfin
+
+cope.lern <- 2*(hybama_with_metadata_tidy$cope_lern_pelvicfin)+hybama_with_metadata_tidy$cope_lern_analfin+hybama_with_metadata_tidy$cope_lern_flush
+
+cope.imler <- hybama_with_metadata_tidy$cope_imler_analfin
+
+trem.meta.unk <- hybama_with_metadata_tidy$trem_meta_unk_caudalfin + hybama_with_metadata_tidy$trem_meta_unk_caudalfin
+
+trem.diplo <- hybama_with_metadata_tidy$trem_diplo_liver + 2*(hybama_with_metadata_tidy$trem_diplo_eye) + hybama_with_metadata_tidy$trem_diplo_conn + hybama_with_metadata_tidy$trem_diplo_flush
 
 ACANTH.BIGB<-pim_vig_with_metadata$ACANTH.BIGB.Intestine            
 ACANTH.BKR<-pim_vig_with_metadata$ACANTH.BKR.Intestine            
@@ -192,8 +211,9 @@ TREM.NEA<-pim_vig_with_metadata$TREM.NEA.CONNECTIVETISSUE+pim_vig_with_metadata$
 TREM.RNDA<-pim_vig_with_metadata$TREM.RNDA.FLUSH+pim_vig_with_metadata$TREM.RNDA.Intestine              
 TREM.SSS<-(2*pim_vig_with_metadata$TREM.SSS.GILL)
 TREM.UNK<-pim_vig_with_metadata$TREM.UNK.CONNECTIVETISSUE+pim_vig_with_metadata$TREM.UNK.FLUSH
-# not a parasite: WORM.A<-pim_vig_with_metadata$WORM.A.Flush                     
+# not a parasite: WORM.A<-pim_vig_with_metadata$WORM.A.Flush              
 
+```
 
 # Need to fix the masses of fish, because they are one decimal point off.
 
