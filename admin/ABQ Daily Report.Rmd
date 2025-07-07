@@ -124,6 +124,7 @@ I checked lots_actual against the database, and it looks like we have pulled eve
 The only chance of filling in gaps is finding uncatalogued specimens. I'll take a quick look and see if any of the old jars are by chance not cataloged.
 - No uncatalogued lots to be found!
 
+
 ### Code for doing daily checks
 
 The purpose of this script is to allow dissectors to quickly assess levels of replication in each category (i.e., before-impact, after-impact, before-control, after-control) during dissections, so that we can adjust lot selection on the fly if need be. We also want to make sure that fish body size range is constant across decades, that latitudes sampled in early days are the same as the latitudes sampled later, and that we are on track to hit our dissection goals.
@@ -210,10 +211,10 @@ hyb_ama_dailies<-hyb_ama_with_metadata %>%
 Need to resample a lot of hybama 6/24/25:
 Lot 5272 does not have big enough fish, and there are no remaining lots for control 1981-1990, so we will skip this lot. 
 
-# 6/30/25
+### 6/30/25
 Replace HYBAMA MSB:Fish:18820 -- impact_1991to2000: replace with MSB:Fish:19001 --- too small, replace with MSB:Fish:30075
 
-# 7/2/25
+### 7/2/25
 Replace HYBAMA MSB:Fish:30401 (too few fish in the jar) -- impact_1991to2000 replace with MSB:Fish:20390
 
 # GAMAFF
@@ -284,3 +285,6 @@ hyb_ama_dailies<-hyb_ama_with_metadata %>%
   group_by(Completion_Date) %>%
   summarize(actual = n())
 ```
+
+### 7/6/25
+Today we began GAMAFF!
