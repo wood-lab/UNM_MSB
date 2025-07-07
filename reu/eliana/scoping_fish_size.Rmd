@@ -24,6 +24,9 @@ First, we load all required packages.
 library(here)
 library(tidyverse)
 library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(ggeffects)
 ```
 
 Next, we import the most up-to-date data
@@ -37,10 +40,37 @@ hyb_ama_with_metadata<-merge(hyb_ama_today, meta_data, by = "CatalogNumber", all
 hybama_today <- hyb_ama_with_metadata %>% 
   janitor::clean_names()
 view(hybama_today)
+
+hybama_data <- read.csv(here("data", "/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv"))
+view(hybama_data)
+
+hybama_data <- hybama_data %>% 
+  janitor::clean_names()
+view(hybama_data)
 ```
 
 ## Data Exploration
 We're interested in seeing if there is a relationship between year collected and fish body size. Let's make a plot to visualize:
 ```{r data_exploration_sizevstime}
-ggplot(data=hybama_today, aes(year_collected,weight_mg)) + geom_point() 
+ggplot(data=hybama_data, aes(year_collected,total_length_mm, color=ci)) + 
+  geom_point() 
+```
+## Preliminary Models
+Is there any relationship between year and length depending on CI zone?
+To figure it out, we'll write a model
+```{r prelim_models}
+hybama_model <- lmerTest::lmer(total_length_mm~(ci*year_collected) + (1|catalog_number), data= hybama_data)
+summary(hybama_model)
+
+#this tests to see if the model well balanced. we want to see a random spread above and below the center line. looks good!
+plot(hybama_model)
+```
+
+## Plotting Models
+Ignore below for now- WIP!
+```{r hymaba_plot}
+hybama_pred <- ggpredict(hybama_model, c("year_collected [n=100]"))
+#plotting
+plot(hybama_pred, show_data = TRUE, dot_alpha = 1)+ 
+  labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL)
 ```
