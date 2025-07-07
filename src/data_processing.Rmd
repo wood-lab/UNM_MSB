@@ -1,6 +1,6 @@
 ---
 title: "Processing Data from Raw to Analyzable Form"
-author: "Chelsea Wood, Gabby Commisso, Connor Whalen"
+author: "Chelsea Wood, Gabby Commisso"
 date: "June-August 2025"
 output:
   html_document:

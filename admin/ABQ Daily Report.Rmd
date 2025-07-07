@@ -216,4 +216,71 @@ Replace HYBAMA MSB:Fish:18820 -- impact_1991to2000: replace with MSB:Fish:19001 
 # 7/2/25
 Replace HYBAMA MSB:Fish:30401 (too few fish in the jar) -- impact_1991to2000 replace with MSB:Fish:20390
 
+# GAMAFF
+<<<<<<< HEAD
+=======
+# Download latest file 
+```{r}
+hyb_ama_today<-read.csv(here("data", "HYBAMA Data _2025.07.01.csv"))
+                        
+length(hyb_ama_today$CatalogNumber)
+```
 
+Now merge dissection data with meta-data (all.x makes sure that you keep all individual fish from the same lot, even though they have the same catalog number).
+```{r}
+hyb_ama_with_metadata<-merge(hyb_ama_today, meta_data, by = "CatalogNumber", all.x = TRUE)
+length(hyb_ama_with_metadata$CatalogNumber)
+
+View(hyb_ama_with_metadata)
+```
+
+Plot to see where the dissected fish fall
+```{r}
+plot(jitter(hyb_ama_with_metadata$Latitude,30)~jitter(hyb_ama_with_metadata$YearCollected,5))+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
+```
+
+
+Desired level of replication
+```{r}
+gam_aff_desired<-read.csv(here("data", "gam_aff_goal.csv"))
+gam_aff_desired<-gam_aff_desired[,-1]
+colnames(gam_aff_desired)[2]<-"n_lots_desired"
+gam_aff_desired$individual_fish_desired<-gam_aff_desired$n_lots_desired*5
+```
+
+
+Actual level of replication
+```{r}
+hyb_ama_actual<-hyb_ama_with_metadata %>%
+  group_by(combo) %>%
+  summarize(actual = n())
+```
+
+
+Merge desired and actual
+```{r}
+hyb_ama_remaining<-merge(hyb_ama_desired, hyb_ama_actual, by.x = "combo", by.y = "combo", all.x = TRUE, all.y = TRUE)
+```
+
+
+Calculate how many you have left
+```{r}
+hyb_ama_remaining$to_go<-(hyb_ama_remaining$individual_fish_desired-ifelse(is.na(hyb_ama_remaining$actual),0,hyb_ama_remaining$actual))
+sum(hyb_ama_remaining$actual,na.rm=T)
+sum(hyb_ama_remaining$to_go,na.rm=T)
+```
+
+Check that body size is invariant through time
+```{r}
+summary(glm(hyb_ama_with_metadata$Total_Length_mm~hyb_ama_with_metadata$YearCollected))
+plot(hyb_ama_with_metadata$Total_Length_mm~hyb_ama_with_metadata$YearCollected)
+summary(glm(hyb_ama_with_metadata$Total_Length_mm~hyb_ama_with_metadata$Latitude))
+plot(hyb_ama_with_metadata$Total_Length_mm~hyb_ama_with_metadata$Latitude)
+```
+
+Create a matrix that shows how many fish you are finishing per day
+```{r}
+hyb_ama_dailies<-hyb_ama_with_metadata %>%
+  group_by(Completion_Date) %>%
+  summarize(actual = n())
+```
