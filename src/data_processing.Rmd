@@ -227,7 +227,7 @@ hybama_processed_data_longer$Weight_mg <- as.numeric(hybama_processed_data_longe
 ## Export both sheets
 
 ```{r hybama_export}
-write.csv(hybama_processed_data_longer, file= "Hybognathus_amarus_processed_machine_readable_2025.07.03.csv")
+write.csv(hybama_processed_data_longer, file= "Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
 
-write.csv(hybama_processed_data, file="Hybognathus_amarus_processed_human_readable_2025.07.03.csv")
+write.csv(hybama_processed_data, file="Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
 ```
