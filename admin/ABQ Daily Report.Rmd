@@ -16,10 +16,12 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 # Description
 Summary log of leadership and decision activities conducted by leadership team at the University of New Mexico during our 2025 summer CAREER parasite lab work in Albuquerque, New Mexico. 
 
-## Link to Google Spreadsheet
+# Initial Selection Procedure
+
+### Link to Google Spreadsheet
 [Lot selection and tracking spreadsheet](https://docs.google.com/spreadsheets/d/1waDMf6cTmtEeaT_14-uCFXRKaHarc8dxyh9Y7yJx9l0/edit?pli=1&gid=486468529#gid=486468529)
 
-# 6/11/25
+### 6/11/25
 Connor sent resampling lots and numbers to Chelsea who replaced them in the spreadsheet on 6/12/25. The lots are as follows:
 MSB:Fish:5253	Gambusia affinis
 MSB:Fish:5247	Hybognathus amarus
@@ -37,12 +39,12 @@ MSB:Fish:77030	Hybognathus amarus
 MSB:Fish:77021	Hybognathus amarus
 MSB:Fish:94735	Pimephales promelas
 
-# 6/12/25
+### 6/12/25
 Connor found two more lots that need to be resampled. Went back through the code file specimen_tallies.R and checked for resampling options for both GAMAFF 1068 and HYBAMA 1162. Neither of them are able to be replaced as there are no more available lots in the collection for their respective CI category and years. Connor made note of this in the spreadsheet The lots are as follows:
 MSB:Fish:1068	Gambusia affinis
 MSB:Fish:1162	Hybognathus amarus
 
-# 6/13/25
+### 6/13/25
 Connor found more lots that needed to be resampled. Connor also went through the list of missing lots and has identified the majority of those that were not found initially, though some are still missing. We have 1 lot that needs to be either found or resampled to send in the shipment to Katie, as well as a few other lots that are missing. The list of missing lots is here:
 MSB:Fish:7917 Pimephales promelas
 MSB:Fish:18794 Pimephales promelas
@@ -130,7 +132,7 @@ The only chance of filling in gaps is finding uncatalogued specimens. I'll take 
 The purpose of this script is to allow dissectors to quickly assess levels of replication in each category (i.e., before-impact, after-impact, before-control, after-control) during dissections, so that we can adjust lot selection on the fly if need be. We also want to make sure that fish body size range is constant across decades, that latitudes sampled in early days are the same as the latitudes sampled later, and that we are on track to hit our dissection goals.
 
 
-# First, bring in all of the meta-data you need to unite with your dissection data
+### First, bring in all of the meta-data you need to unite with your dissection data
 ```{r}
 meta_data<-read.csv(here("data", "all_lots_okay_to_dissect.csv"))
 meta_data$combo<-paste(meta_data$CI,meta_data$decade,sep="_")
@@ -138,10 +140,8 @@ View(meta_data)
 ```
 
 
-### HYBAMA
-<<<<<<< HEAD
-=======
-# Download latest file 
+# HYBAMA
+Download latest file 
 ```{r}
 hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.07.03.csv"))
                         
@@ -218,11 +218,9 @@ Replace HYBAMA MSB:Fish:18820 -- impact_1991to2000: replace with MSB:Fish:19001 
 Replace HYBAMA MSB:Fish:30401 (too few fish in the jar) -- impact_1991to2000 replace with MSB:Fish:20390
 
 # GAMAFF
-<<<<<<< HEAD
-=======
-# Download latest file 
+Download latest file 
 ```{r}
-hyb_ama_today<-read.csv(here("data", "HYBAMA Data _2025.07.01.csv"))
+hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.07.03.csv"))
                         
 length(hyb_ama_today$CatalogNumber)
 ```
