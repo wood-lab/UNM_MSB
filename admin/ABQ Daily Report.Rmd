@@ -286,3 +286,6 @@ hyb_ama_dailies<-hyb_ama_with_metadata %>%
 
 ### 7/6/25
 Today we began GAMAFF!
+
+### 7/9/25
+Catalog number 1077 (col. 1938) has a bunch/majority of fish in it that are cut open. Randomly reselected MSB:Fish:1104 (see specimen_tallies.R)
