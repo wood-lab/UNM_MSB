@@ -288,4 +288,4 @@ gam_aff_dailies<-gam_aff_with_metadata %>%
 Today we began GAMAFF!
 
 ### 7/9/25
-Catalog number 1077 (col. 1938) has a bunch/majority of fish in it that are cut open. Randomly reselected MSB:Fish:1104 (see specimen_tallies.R)
+Catalog number 1077 (col. 1938) has a bunch/majority of fish in it that are cut open. Randomly reselected MSB:Fish:1105 (see specimen_tallies.R)

@@ -555,6 +555,6 @@ impact_1991to2000<-hyb_ama[ sample( which( hyb_ama$combo == "impact_1991-2000"),
 # 7/9/25
 # Replace GAMAFF MSB:Fish:1077 (all the fish in the jar are gutted)
 impact_1931to1940<-gam_aff[ sample( which( gam_aff$combo == "impact_1931-1940"), 1, replace = F), ]
-# Replace with MSB:Fish:1104, 1105, 1091
+# Replace with MSB:Fish:1105
 
 
