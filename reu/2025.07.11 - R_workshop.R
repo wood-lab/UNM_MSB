@@ -10,7 +10,7 @@
 
 getwd()
 
-# If you need to change your working directory, paste the file structure between the quotation marks below.
+# If you need to change your working directory , paste the file structure between the quotation marks below.
 # To get the file structure, open the folder and then "Get info" about that folder. Copy the file structure and paste it below.
 
 setwd("C:/Users/imani/OneDrive/Desktop/TUBRI_Monogenea_Project")
