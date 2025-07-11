@@ -2,6 +2,7 @@
 # A workshop
 # Written by Chelsea Wood (chelwood@uw.edu)
 # 1 July 2025
+# HI!
 
 # To run a thing in R, you put your cursor on it and hit COMMAND+RETURN (on Mac) or CONTROL+RETURN (on PC).
 # Anything with a # in front of it will not run, because it is annotation - words designed to be human-readable, but meant to be ignored by R.
