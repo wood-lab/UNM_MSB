@@ -29,6 +29,7 @@ View(hyb_ama_data)
 
 hyb_ama_data
 
+
 # With your dataset ready to go, you can now call individual columns in that dataset using $ plus the variable name, exactly as it is spelled and capitalized in the dataset.
 
 hyb_ama_data$YearCollected
@@ -41,7 +42,14 @@ hyb_ama_data[33,2]
 
 # You can now perform simple data manipulations on the variables.  For example, if I want the total number of MONO.DACT worms we counted in Hybognathus amarus, I can write,
 
-sum(hyb_ama_data$mono.dact)
+sum(hyb_ama_data$trem.diplo)
+
+#Uh oh! Why doesn't that work? 
+# When there's an NA present in a list, R can't do calculations with it. You can get around it with this handy piece of code:
+# na.rm=TRUE
+# Let's try the same code again, but include the na.rm piece:
+
+sum(hyb_ama_data$trem.diplo, na.rm=TRUE)
 
 # Or maybe I want the mean number of MONO.DACT per fish. It's simple as this:
 
