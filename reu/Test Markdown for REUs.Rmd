@@ -38,5 +38,19 @@ hybama_only <- data %>%
   filter(scientific_name %in% c("Hybognathus amarus"))
 ```
 
+Plot
+```{r}
+hybama_only <- data %>%
+  filter(scientific_name %in% c("Hybognathus amarus"))
+
+
+Plot
+```{r}
+hist(hybama_only$individual_count)
+
+ggplot(hybama_only,
+       aes(x = year_collected, y = individual_count)) + geom_point()
+
+
 
 
