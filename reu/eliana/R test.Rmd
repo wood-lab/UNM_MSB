@@ -1,0 +1,38 @@
+
+---
+title: "R TEST"
+author: "Eliana Ortega"
+date: "2025-07-03"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+load packages
+```{r}
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+```
+load data
+```{r}
+data <- read_csv("~/Downloads/Independent project/Wood Lab MSB/data/all_lots_okay_to_dissect.csv") %>% 
+  janitor::clean_names()
+```
+filter data
+```{r}
+hybama_only <- data %>% 
+  filter(scientific_name %in% c("Hybognathus amarus"))
+hybama_impact <- hybama_only %>% 
+  filter(ci %in% c("impact"))
+```
+Plot
+```{r}
+hist(hybama_only$individual_count)
+
+ggplot(hybama_only,
+       aes(x = year_collected, y = individual_count)) +
+  geom_point() + theme_minimal()
+```
+

@@ -1,0 +1,233 @@
+---
+title: "Processing Data from Raw to Analyzable Form"
+author: "Chelsea Wood, Gabby Commisso"
+date: "June-August 2025"
+output:
+  html_document:
+  theme: readable
+highlight: textmate
+toc: true
+toc_float: true
+toc_depth: 3
+---
+
+The purpose of this script is to clean the raw dataset, strip out unneeded fields, sum parasite counts across organs, and generally get the thing into analyzable form. If you ever need things from the raw dataset, they will still be there for you to access!  But the processed dataset will have what is needed for most analyses.
+
+
+First step: load required packages
+```{r packages}
+library(googledrive)
+library(skimr)
+library(lubridate)
+library(tidyverse)
+library(reshape2)
+library(readxl)
+library(readr)
+library(dplyr)
+library(here)
+```
+
+
+Here's the workflow that you need to follow for each fish species:
+1. List all parasite species detected and figure out which are valid (i.e., lumping some, discarding those that aren't parasites).
+2. Sum across organs within valid parasite species and double counts for those organs that need to be doubled.
+3. Create a dataset containing only the data you want (get rid of organ and voucher headers).
+4. Melt the dataset so that parasite counts are in one column and parasite names are in another column.
+
+
+First, bring in all of the meta-data you need to unite with your dissection data
+
+```{r metadata}
+meta_data <- read.csv(here("data", "all_lots_okay_to_dissect.csv"))
+meta_data$combo<-paste(meta_data$CI,meta_data$decade,sep="_")
+```
+
+
+# HYBAMA (Hybognathus amarus)
+
+Download most recent file
+```{r hybama_dataset}
+hybama_today<-read.csv(here("data", "HYBAMA data_2025.07.03.csv"))
+length(hybama_today$CatalogNumber)
+```
+
+Now merge dissection data with meta-data (all.x makes sure that you keep all individual fish from the same lot, even though they have the same catalog number).
+
+```{r hybama_merge}
+hybama_with_metadata<-merge(hybama_today, meta_data, by.x = "CatalogNumber", by.y = "CatalogNumber", all.x = TRUE)
+length(hybama_with_metadata$CatalogNumber)
+```
+Let's make this dataset tidy! Making headers consistent, removing unnecessary columns, etc
+```{r tidy_hybama}
+hybama_with_metadata <- hybama_with_metadata %>% 
+  janitor::clean_names()
+
+hybama_with_metadata_tidy <- hybama_with_metadata %>% 
+  select(-c(73:132))
+
+hybama_with_metadata_tidy <- hybama_with_metadata_tidy %>% 
+  select (-c(fish_species_1, fish_barcode_1, msb_fish_catalog_number, tissues, island, island_group, verbatim_elevation, lat_long_comments))
+
+view(hybama_with_metadata_tidy)
+```
+
+Plot to see where the dissected fish fall.
+```{r hybama_test}
+plot(jitter(hybama_with_metadata_tidy$latitude,30)~jitter(hybama_with_metadata$year_collected,5))+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
+
+str(hybama_with_metadata_tidy)
+
+hybama_headers<-ls(hybama_with_metadata_tidy)
+hybama_headers<-as.factor(hybama_headers)
+```
+
+## Add parasites across organs and double what needs to be doubled.
+Notes:
+- cyst.unk is NOT a parasite
+- trem_unk_conn and trem_unk_flush are columns of entirely zeros, so were not included in this
+- myxo.susp was determined to be NOT a parasite
+```{r hybama_parasites}
+mono.gyro<-2*(hybama_with_metadata_tidy$mono_gyro_pectoralfin)+2*(hybama_with_metadata_tidy$mono_gyro_pelvicfin)+hybama_with_metadata_tidy$mono_gyro_analfin+hybama_with_metadata_tidy$mono_gyro_caudalfin+hybama_with_metadata_tidy$mono_gyro_dorsalfin+2*(hybama_with_metadata_tidy$mono_gyro_gill)+hybama_with_metadata_tidy$mono_gyro_flush
+
+trem.fim <- 2*(hybama_with_metadata_tidy$trem_fim_pectoralfin)+hybama_with_metadata_tidy$trem_fim_caudalfin
+
+cope.lern <- 2*(hybama_with_metadata_tidy$cope_lern_pelvicfin)+hybama_with_metadata_tidy$cope_lern_analfin+hybama_with_metadata_tidy$cope_lern_flush
+
+cope.imler <- hybama_with_metadata_tidy$cope_imler_analfin
+
+trem.meta.unk <- hybama_with_metadata_tidy$trem_meta_unk_caudalfin + hybama_with_metadata_tidy$trem_meta_unk_caudalfin + 2*(hybama_with_metadata_tidy$meta_unk_gill)
+
+trem.diplo <- hybama_with_metadata_tidy$trem_diplo_liver + 2*(hybama_with_metadata_tidy$trem_diplo_eye) + hybama_with_metadata_tidy$trem_diplo_conn + hybama_with_metadata_tidy$trem_diplo_flush
+
+trem.d <- hybama_with_metadata_tidy$trem_d_liver + hybama_with_metadata_tidy$trem_d_conn + hybama_with_metadata_tidy$trem_d_flush
+
+trem.gold <- hybama_with_metadata_tidy$trem_gold_liver + hybama_with_metadata_tidy$trem_gold_conn
+
+trem.em <- hybama_with_metadata_tidy$trem_em_eye 
+
+trem.l <- hybama_with_metadata_tidy$trem_l_conn + hybama_with_metadata_tidy$trem_l_flush
+
+trem.b <- hybama_with_metadata_tidy$trem_b_conn + hybama_with_metadata_tidy$trem_b_flush
+
+trem.dlum <- hybama_with_metadata_tidy$trem_dlum_flush
+
+trem.ridge <- hybama_with_metadata_tidy$trem_ridge_flush
+
+nem.cl <- hybama_with_metadata_tidy$nem_cl_int
+
+nem.unk <- hybama_with_metadata_tidy$nema_unk_int
+
+mono.dact <- 2*(hybama_with_metadata_tidy$mono_dact_gill)
+
+myxo.b <- 2*(hybama_with_metadata_tidy$myxo_b_gill)
+```
+
+Quickly evaluating relationship between total length and weight to check for any potential abnormalities.
+```{r hybama_weight_check}
+ggplot(hybama_with_metadata_tidy,aes(total_length_mm,weight_mg))+
+  geom_point(size=4)
+```
+Looks good!
+
+## Putting it all together
+
+Put the columns into one dataframe...
+```{r hybama_all_together_now}
+hybama_processed_data<-cbind.data.frame(
+  hybama_with_metadata_tidy$catalog_number,
+  hybama_with_metadata_tidy$year_fish_collected,        
+  hybama_with_metadata_tidy$month_collected, 
+  hybama_with_metadata_tidy$day_fish_collected,         
+  hybama_with_metadata_tidy$individual_id,
+  hybama_with_metadata_tidy$fish_barcode,
+  hybama_with_metadata_tidy$dissector,
+  hybama_with_metadata_tidy$examiner, 
+  hybama_with_metadata_tidy$dissection_date, 
+  hybama_with_metadata_tidy$sex, 
+  hybama_with_metadata_tidy$total_length_mm, 
+  hybama_with_metadata_tidy$standard_length_mm,
+  hybama_with_metadata_tidy$weight_mg, 
+  hybama_with_metadata_tidy$ci, 
+  hybama_with_metadata_tidy$combo, 
+  hybama_with_metadata_tidy$latitude, 
+  hybama_with_metadata_tidy$longitude, 
+  cope.imler, 
+  cope.lern, 
+  mono.dact, 
+  mono.gyro, 
+  myxo.b, 
+  nem.cl, 
+  nem.unk, 
+  trem.b, 
+  trem.d, 
+  trem.diplo, 
+  trem.dlum, 
+  trem.em, 
+  trem.fim, 
+  trem.gold, 
+  trem.l, 
+  trem.meta.unk, 
+  trem.ridge)
+
+```
+
+
+Name the columns...
+```{r hybama_columns}
+colnames(hybama_processed_data)[1]<-"CatalogNumber"
+colnames(hybama_processed_data)[2]<-"YearCollected"
+colnames(hybama_processed_data)[3]<-"MonthCollected"
+colnames(hybama_processed_data)[4]<-"DayCollected"
+colnames(hybama_processed_data)[5]<-"IndividualFishID"
+colnames(hybama_processed_data)[6] <- "FishBarcode"
+colnames(hybama_processed_data)[7]<-"Dissector"
+colnames(hybama_processed_data)[8] <- "Examiner"
+colnames(hybama_processed_data)[9]<-"DissectionDate"
+colnames(hybama_processed_data)[10]<-"Sex"
+colnames(hybama_processed_data)[11]<-"TotalLength_mm"
+colnames(hybama_processed_data)[12]<-"StandardLength_mm"
+colnames(hybama_processed_data)[13]<-"Weight_mg"
+colnames(hybama_processed_data)[14]<-"CI"
+colnames(hybama_processed_data)[15]<-"combo"
+colnames(hybama_processed_data)[16]<-"Latitude"
+colnames(hybama_processed_data)[17]<-"Longitude"
+
+view(hybama_processed_data)
+```
+
+## Make the dataset analyzable
+
+```{r make_dataset_analyzable}
+hybama_processed_data_longer<-melt(hybama_processed_data,id=c(
+  "CatalogNumber", 
+  "YearCollected", 
+  "MonthCollected", 
+  "DayCollected", 
+  "IndividualFishID", 
+  "FishBarcode", 
+  "Dissector",
+  "Examiner", 
+  "DissectionDate", 
+  "Sex", 
+  "TotalLength_mm", 
+  "StandardLength_mm",
+  "Weight_mg",
+  "CI","combo",
+  "Latitude",
+  "Longitude"))
+
+colnames(hybama_processed_data_longer)[18]<-"psite_spp"
+colnames(hybama_processed_data_longer)[19]<-"psite_count"
+
+# Fix data type for weight. Otherwise, it is read as a character and weight is plotted wrong.
+
+hybama_processed_data_longer$Weight_mg <- as.numeric(hybama_processed_data_longer$Weight_mg)
+```
+
+## Export both sheets
+
+```{r hybama_export}
+write.csv(hybama_processed_data_longer, file= "Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
+
+write.csv(hybama_processed_data, file="Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
+```

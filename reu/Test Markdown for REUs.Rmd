@@ -18,24 +18,48 @@ Install packages
 ```{r}
 install.packages("tidyverse")
 install.packages("janitor")
+install.packages("here")
+install.packages("ggplot2")
 ```
 
 Load packages
 ```{r}
 library(tidyverse)
+library(here)
+library(ggplot2)
 ```
 
 Load Data
 ```{r}
-data <- read_csv("data/all_lots_okay_to_dissect.csv") %>% 
-  janitor::clean_names() 
+data <- read_csv(here("data", "all_lots_okay_to_dissect.csv")) %>% 
+  janitor::clean_names()
+  
 ```
-
 
 Filter our data
 ```{r}
 hybama_only <- data %>% 
-  filter(scientific_name %in% c("Hybognathus amarus"))
+  filter(scientific_name %in% c("Hybognathus amarus")) 
+```
+
+Plot
+```{r}
+hist(hybama_only$individual_count)
+
+
+ggplot(hybama_only,
+       aes(x = year_collected, y = individual_count)) +
+  geom_point() + theme_minimal()
+
+
+ggplot(ha.bins2,
+       aes(x = fish_sp_x, y = avg.bin, fill = psite_type)) +
+  facet_wrap(timing ~ event) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c("trematode_metacercaria" = "#AFDFEF", "monogenean" = "#A6E000", "trematode" = "#c9ad79", "myxozoan" = "#07c3c5")) + 
+  labs(x = "Fish Species", y = "Average Parasite Abundance", fill = "Parasite Type", linetype = "Parasite Type") +
+  connor_theme
+
 ```
 
 Plot
@@ -50,6 +74,13 @@ hist(hybama_only$individual_count)
 
 ggplot(hybama_only,
        aes(x = year_collected, y = individual_count)) + geom_point()
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,77 @@
+# How to use R
+# A workshop
+# Written by Chelsea Wood (chelwood@uw.edu)
+# 1 July 2025
+
+# To run a thing in R, you put your cursor on it and hit COMMAND+RETURN (on Mac) or CONTROL+RETURN (on PC).
+# Anything with a # in front of it will not run, because it is annotation - words designed to be human-readable, but meant to be ignored by R.
+
+# This is how you find out what directory R is reading from - i.e., what folder on your computer is R going to when you ask it to retrieve a file?  getwd = get working directory.
+
+getwd()
+
+# If you need to change your working directory, paste the file structure between the quotation marks below.
+# To get the file structure, open the folder and then "Get info" about that folder. Copy the file structure and paste it below.
+
+setwd("C:/Users/imani/OneDrive/Desktop/TUBRI_Monogenea_Project")
+
+# Once your working directory is set, you're ready to read in the data!  If there are sub-folders inside your working directory, you'll need to specify them as I have below.
+# The <- command tells R what a thing is called.  So you can read the line below as,
+# Look at this csv file, and name it hyb_ama_data.  When I call hyb_ama_data, I want you to give me the csv file.
+
+hyb_ama_data<-read.csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
+
+# To see your data as a spreadsheet in a new tab, use the View command.
+
+View(hyb_ama_data)
+
+# You can also see your data in the console below by running the name of the dataset.
+
+hyb_ama_data
+
+
+# With your dataset ready to go, you can now call individual columns in that dataset using $ plus the variable name, exactly as it is spelled and capitalized in the dataset.
+
+hyb_ama_data$YearCollected
+hyb_ama_data$mono.dact
+
+
+# You can also call individual rows, columns, or cells using brackets.
+
+hyb_ama_data[33,2]
+
+# You can now perform simple data manipulations on the variables.  For example, if I want the total number of MONO.DACT worms we counted in Hybognathus amarus, I can write,
+
+sum(hyb_ama_data$trem.diplo)
+
+#Uh oh! Why doesn't that work? 
+# When there's an NA present in a list, R can't do calculations with it. You can get around it with this handy piece of code:
+# na.rm=TRUE
+# Let's try the same code again, but include the na.rm piece:
+
+sum(hyb_ama_data$trem.diplo, na.rm=TRUE)
+
+# Or maybe I want the mean number of MONO.DACT per fish. It's simple as this:
+
+mean(hyb_ama_data$mono.dact)
+
+# I can even call up a quick histogram of the number of MONO.DACT in each fish:
+
+hist(hyb_ama_data$mono.dact)
+
+# Or I can plot the number of MONO.DACT over time - plot(y~x).
+
+plot(hyb_ama_data$mono.dact~hyb_ama_data$YearCollected)
+
+plot(hyb_ama_data$mono.dact~jitter(hyb_ama_data$YearCollected,10))
+
+plot(hyb_ama_data$trem.diplo~hyb_ama_data$YearCollected)
+
+plot(hyb_ama_data$trem.diplo~jitter(hyb_ama_data$YearCollected,10))
+
+# Looks like there's a pattern there!  Let's do a simple statistical test to see if it is significant?
+# A model is an equation that represents the data. Here, our model is y = mx + b.
+
+summary(lm(hyb_ama_data$mono.dact~hyb_ama_data$YearCollected))
+
+summary(lm(hyb_ama_data$trem.diplo~hyb_ama_data$YearCollected))
