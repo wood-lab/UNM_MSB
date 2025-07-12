@@ -14,7 +14,7 @@ getwd()
 # If you need to change your working directory , paste the file structure between the quotation marks below.
 # To get the file structure, open the folder and then "Get info" about that folder. Copy the file structure and paste it below.
 
-setwd("C:/Users/Bradyn/OneDrive/GEO366/ABQ_DATA/IND_PROJ_BRADYN")
+setwd("C:/Users/imani/OneDrive/Desktop/TUBRI_Monogenea_Project")
 
 # Once your working directory is set, you're ready to read in the data!  If there are sub-folders inside your working directory, you'll need to specify them as I have below.
 # The <- command tells R what a thing is called.  So you can read the line below as,
@@ -76,3 +76,5 @@ plot(hyb_ama_data$trem.diplo~jitter(hyb_ama_data$YearCollected,10))
 summary(lm(hyb_ama_data$mono.dact~hyb_ama_data$YearCollected))
 
 summary(lm(hyb_ama_data$trem.diplo~hyb_ama_data$YearCollected))
+
+
