@@ -76,6 +76,7 @@ ggplot(data=hybama_data, aes(year_collected,total_length_mm, color=ci)) +
         panel.border=element_blank(),
         axis.line=element_line())
 ```
+
 ## Preliminary Models
 Is there any relationship between year and length depending on CI zone?
 To figure it out, we'll write a model
