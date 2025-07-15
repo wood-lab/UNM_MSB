@@ -31,29 +31,50 @@ library(ggeffects)
 
 Next, we import the most up-to-date data
 ```{r data_importing}
-#HYBAMA
+#METADATA
 meta_data<-read.csv(here("data", "all_lots_okay_to_dissect.csv"))
 meta_data$combo<-paste(meta_data$CI,meta_data$decade,sep="_")
+
+#HYBAMA
+# here is code to read in unpolished dissection data, but since we now have polished data, this part is unnecessary:
 hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.07.02.csv"))
 hyb_ama_with_metadata<-merge(hyb_ama_today, meta_data, by = "CatalogNumber", all.x = TRUE)
-
 hybama_today <- hyb_ama_with_metadata %>% 
   janitor::clean_names()
 view(hybama_today)
 
+#here is code to read in polished data:
 hybama_data <- read.csv(here("data", "/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv"))
 view(hybama_data)
-
 hybama_data <- hybama_data %>% 
   janitor::clean_names()
 view(hybama_data)
+
+# GAMAFF
+# Here, since we don't have polished data yet, I'm importing the most recent dissection data. 
+gam_aff_today <- read.csv(here("data", "GAMAFF Dataset_2025.07.14.csv"))
+gam_aff_with_metadata<-merge(gam_aff_today, meta_data, by = "CatalogNumber", all.x = TRUE)
+gamaff_today <- gam_aff_with_metadata %>% 
+  janitor::clean_names()
+View(gamaff_today)
 ```
+
+
+# HYBOGNATHUS AMARUS
 
 ## Data Exploration
 We're interested in seeing if there is a relationship between year collected and fish body size. Let's make a plot to visualize:
 ```{r data_exploration_sizevstime}
+#feel free to play around with color (you can enter hex codes for specific values)
 ggplot(data=hybama_data, aes(year_collected,total_length_mm, color=ci)) + 
-  geom_point() 
+  geom_point() +
+  scale_color_manual(values = c("control" = "blue", 
+                                "impact" = "red")) +
+  theme_bw() +
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line())
 ```
 ## Preliminary Models
 Is there any relationship between year and length depending on CI zone?
@@ -66,11 +87,33 @@ summary(hybama_model)
 plot(hybama_model)
 ```
 
+These model results can be a little trickier to understand, but you can see it shows us a row called "ciimpact:year_collected". This is the slope of the line that represents how the impact category is changing over time. It's a negative slope, but the p-value is insignificant (0.627) so there isn't really much change over time. 
+
 ## Plotting Models
-Ignore below for now- WIP!
+I got the plot to work! Now we can use this same format for all the species. 
 ```{r hymaba_plot}
-hybama_pred <- ggpredict(hybama_model, c("year_collected [n=100]"))
+#the model below will create a line that plots the best fit for how control and impact categories are changing separately through time (interactive effect)
+hybama_pred <- ggpredict(hybama_model, c("year_collected [n=100]", "ci"))
 #plotting
-plot(hybama_pred, show_data = TRUE, dot_alpha = 1)+ 
-  labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL)
+# i gave this plot the same aesthetics as above: feel free to change!
+plot(hybama_pred, show_data = TRUE, dot_alpha = 1) + 
+  labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
+    scale_color_manual(values = c("control" = "blue", 
+                                "impact" = "red")) +
+  theme_bw() +
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line())
 ```
+
+# GAMBUSIA AFFINIS
+
+I'm going to turn it over to you! Try to copy what we did for Hybognathus, but edit it for Gambusia. You can steal all my code from above and change what you need. 
+- NOTE: the dataframe is already loaded in, and is called "gamaff_today" (see the initial steps section). Some columns may have different names that in the Hybognathus code, so make sure to double check (ex "year_collected" in the hybama_data is called "year_fish_collected" in gamaff_today)
+
+## Data Exploration
+
+## Preliminary Models
+
+## Plotting Models
