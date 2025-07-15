@@ -220,7 +220,7 @@ Replace HYBAMA MSB:Fish:30401 (too few fish in the jar) -- impact_1991to2000 rep
 # GAMAFF
 Download latest file 
 ```{r}
-gam_aff_today<-read.csv(here("data", "GAMAFF Dataset_2025.07.09.csv"))
+gam_aff_today<-read.csv(here("data", "GAMAFF Dataset_2025.07.14.csv"))
                         
 length(gam_aff_today$CatalogNumber)
 ```
@@ -289,3 +289,6 @@ Today we began GAMAFF!
 
 ### 7/9/25
 Catalog number 1077 (col. 1938) has a bunch/majority of fish in it that are cut open. Randomly reselected MSB:Fish:1105 (see specimen_tallies.R)
+
+### 7/15/25
+Ran the check with yesterday's data. On Friday 7/10 we implemented a size-by-year rule, and on Monday 7/14 we implemented a size-by-latitude rule. Both relationships are still significant. More details about these selection criteria can be found in the methods document. 
