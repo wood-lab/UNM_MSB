@@ -20,3 +20,13 @@ ab_corrales_levee <- HYBAMA_data %>%
 
 view(ab_corrales_levee)
 #setting Corrales levee construction date
+before_ab_corrales_levee <- ab_corrales_levee %>% 
+  mutate(before_after_corrales = case_when(
+    YearCollected >=1997 ~ "after_corrales",
+    YearCollected >=1986 & YearCollected<1997 ~"during_corrales",
+    YearCollected < 1986 ~"before_corrales",
+    TRUE ~"no_intervention"
+  ))
+view(before_ab_corrales_levee)
+
+
