@@ -296,4 +296,4 @@ Ran the check with yesterday's data. On Friday 7/10 we implemented a size-by-yea
 ### 7/16/25
 Today we uncovered MSB:Fish:4440, where there the fish are too small to fit the latitude rule. We checked alternative lots to replace, but found that we are already dissecting every lot in this category except for one which was deemed too small by Connor (MSB:Fish:3993). So we went ahead with dissections on 4440, even though they don't fit the new latitude size rule. 
 
-We replaced MSB:Fish:1080 (only 10 fish) with MSB:Fish:1101/1104. 
+We replaced MSB:Fish:1080 (only 10 fish) with MSB:Fish:1089. 

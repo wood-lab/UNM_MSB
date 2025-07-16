@@ -563,8 +563,8 @@ impact_1971to1980<-gam_aff[ sample( which( gam_aff$combo == "impact_1971-1980"),
 # No replacement we aren't already dissecting :-( So we will go ahead and dissect these and make notes in the datasheet that it doesn't have any size selection
 
 # Replace GAMAFF MSB:Fish:1080 (only 10 fish in jar)
-impact_1931to1940 <- gam_aff[ sample( which( gam_aff$combo == "impact_1931-1940"), 10, replace = F), ]
-# Replace with MSB:Fish:1101 OR 1104 
+impact_1931to1940 <- gam_aff[ sample( which( gam_aff$combo == "impact_1931-1940"), 17, replace = F), ]
+# Replace with MSB:Fish:1089
 
 # Replace GAMAFF MSB:Fish:340 (only 10 fish in jar)
 impact_1941to1950 <- gam_aff[ sample( which( gam_aff$combo == "impact_1941-1950"), 8, replace = F), ]
