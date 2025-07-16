@@ -292,3 +292,6 @@ Catalog number 1077 (col. 1938) has a bunch/majority of fish in it that are cut 
 
 ### 7/15/25
 Ran the check with yesterday's data. On Friday 7/10 we implemented a size-by-year rule, and on Monday 7/14 we implemented a size-by-latitude rule. Both relationships are still significant. More details about these selection criteria can be found in the methods document. 
+
+### 7/16/25
+Today we uncovered MSB:Fish:4440, where there the fish are too small to fit the latitude rule. We checked alternative lots to replace, but found that we are already dissecting every lot in this category except for one which was deemed too small by Connor (MSB:Fish:3993). So we went ahead with dissections on 4440, even though they don't fit the new latitude size rule. 

@@ -557,4 +557,7 @@ impact_1991to2000<-hyb_ama[ sample( which( hyb_ama$combo == "impact_1991-2000"),
 impact_1931to1940<-gam_aff[ sample( which( gam_aff$combo == "impact_1931-1940"), 1, replace = F), ]
 # Replace with MSB:Fish:1105
 
-
+# 7/16/25
+# Replace GAMAFF MSB:Fish:4440 (all fish are below size limit)
+impact_1971to1980<-gam_aff[ sample( which( gam_aff$combo == "impact_1971-1980"), 9, replace = F), ]
+# No replacement we aren't already dissecting :-(
