@@ -114,7 +114,38 @@ I'm going to turn it over to you! Try to copy what we did for Hybognathus, but e
 - NOTE: the dataframe is already loaded in, and is called "gamaff_today" (see the initial steps section). Some columns may have different names that in the Hybognathus code, so make sure to double check (ex "year_collected" in the hybama_data is called "year_fish_collected" in gamaff_today)
 
 ## Data Exploration
+```{r}
+ggplot(data=gamaff_today, aes(year_fish_collected,total_length_mm, color=ci)) + 
+  geom_point() +
+  scale_color_manual(values = c("control" = "blue", 
+                                "impact" = "red")) +
+  theme_bw() +
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line())
+```
 
 ## Preliminary Models
+```{r}
+gamaff_model <- lmerTest::lmer(total_length_mm~(ci*year_fish_collected) + (1|catalog_number), data= gamaff_today)
+summary(gamaff_model)
+
+plot(gamaff_model)
+```
 
 ## Plotting Models
+```{r}
+gamaff_pred <- ggpredict(gamaff_model, c("year_fish_collected [n=100]", "ci"))
+
+plot(gamaff_pred, show_data = TRUE, dot_alpha = 1) + 
+  labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
+    scale_color_manual(values = c("control" = "blue", 
+                                "impact" = "red")) +
+  theme_bw() +
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line())
+```
+
