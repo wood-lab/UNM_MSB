@@ -16,6 +16,7 @@ ab_corrales_levee <- HYBAMA_data %>%
     Latitude < 35.1609175651113 ~ "corrales_levee_below",
     TRUE ~ "no_intervention"
   ))
+
 #setting Corrales levee construction date
 before_ab_corrales_levee <- ab_corrales_levee %>% 
   mutate(before_after_corrales = case_when(
@@ -43,58 +44,18 @@ before_ab_amrg_wlevee<-ab_amrg_wlevee %>%
   ))
 #renaming data
 BACI_levee<-before_ab_amrg_wlevee
-#Summing parasite counts
+
 BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge")], na.rm=TRUE)
 
-#Filter for above Corrales
-above_corrales_levee<-BACI_levee[tolower(BACI_levee$corrales_locale)=="corrales_levee_above",]
 
-#filter for above and before corrales
-above_corrales_blevee<-above_corrales_levee[tolower(above_corrales_levee$before_after_corrales)=="before_corrales",]
-view(above_corrales_blevee)
-
-#filter for above and after corrales
-above_corrales_alevee<-above_corrales_levee[tolower(above_corrales_levee$before_after_corrales)=="after_corrales",]
-
-#plots for Above corrales
-plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected)
-summary(lm(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected))
+view(BACI_levee$parasite_sum)
 
 
-#filter for below and in corrales
-
-below_corrales_levee<-BACI_levee[tolower(BACI_levee$corrales_locale)=="corrales_levee_below",]
-
-view(below_corrales_levee)
-
-#filter for below corrales and above west middle rio grande
-true_below_corrales<-below_corrales_levee[tolower(below_corrales_levee$w_amrg_locale)=="amrg_wlevee_above",]
-
-#Filter for above west middle rio grande
-
-above_wamrg_levees<-BACI_levee[tolower(BACI_levee$w_amrg_locale)=="amrg_wlevee_above",]
-
-#filter for above and before west middle rio grande
-above_wamrg_blevees<-above_wamrg_levees[tolower(above_wamrg_levees$before_after_wamrg)=="before_w_mrg",]
-
-#filter for above and after west middle rio grande
-above_wamrg_alevees<-above_wamrg_levees[tolower(above_wamrg_levees$before_after_wamrg)=="after_w_mrg",]
-view(above_wamrg_alevees)
-#filter for in and below west middle rio grande
-
-view(filtered_wamrg_alevees)
-view(filtered_wamrg_balevees)
-
-
-plot(BACI_levee$parasite_sum~BACI_levee$YearCollected)
-view(BACI_levee$corrales_locale)
 
 character_counts<-BACI_levee %>% count(before_after_wamrg)
-
 year_counts<-BACI_levee %>% count(YearCollected)
 
 print(year_counts)
-
 print(character_counts)
 
 view(character_counts)  
