@@ -52,5 +52,22 @@ view(before_ab_amrg_wlevee)
 #renaming data
 BACI_levee<-before_ab_amrg_wlevee
 view(BACI_levee)  
+BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge")])
+
+view(BACI_levee$parasite_sum)
+
+
+
+character_counts<-BACI_levee %>% count(before_after_wamrg)
+year_counts<-BACI_levee %>% count(YearCollected)
+
+print(year_counts)
+print(character_counts)
+
+view(character_counts)  
+view(year_counts)
+
+hist(character_counts$n)
+plot(character_counts$n~year_counts$YearCollected)
 
 
