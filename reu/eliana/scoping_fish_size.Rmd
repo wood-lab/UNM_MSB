@@ -159,6 +159,15 @@ plot(residuals(connor_test_simple) ~ fitted(connor_test_simple)) # since this di
 
 # model is a fine fit, no effect of ci is present in fish size
 
+
+# run with year as fixed effect
+connor_test_simple <- glmmTMB(total_length_mm ~ ci + year_collected + (1|catalog_number), 
+                       data = hybama_data)
+simulateResiduals(fittedModel = connor_test_simple, plot = TRUE) # variance homogeneous :(
+summary(connor_test_simple)
+plot(parameters(connor_test_simple))
+
+# this model tells you there is no effect of impact BUT there is an effect of certain years, if you want to know if there is a buried effect of certain years DEPENDENT on ci:impact, then you would do an interaction term
 ```
 
 
