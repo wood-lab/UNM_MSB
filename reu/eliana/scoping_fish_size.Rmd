@@ -27,6 +27,9 @@ library(ggplot2)
 library(lme4)
 library(lmerTest)
 library(ggeffects)
+library(glmmTMB)
+library(DHARMa)
+library(parameters)
 ```
 
 Next, we import the most up-to-date data
@@ -87,6 +90,16 @@ summary(hybama_model)
 #this tests to see if the model well balanced. we want to see a random spread above and below the center line. looks good!
 plot(hybama_model)
 ```
+
+# connor alternate model 
+```{r}
+connor_test <- glmmTMB(total_length_mm ~ ci*year_collected + (1|catalog_number), 
+                       data = hybama_data)
+simulateResiduals(fittedModel = connor_test, plot = TRUE)
+summary(connor_test)
+plot(parameters(connor_test))
+```
+
 
 These model results can be a little trickier to understand, but you can see it shows us a row called "ciimpact:year_collected". This is the slope of the line that represents how the impact category is changing over time. It's a negative slope, but the p-value is insignificant (0.627) so there isn't really much change over time. 
 
