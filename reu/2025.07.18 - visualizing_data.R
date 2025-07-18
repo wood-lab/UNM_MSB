@@ -9,12 +9,15 @@
 
 # Let us begin by loading the dataset we want to work with
 
-pim_vig_data<-read.csv("data/processed/Pimephales_vigilax_processed_machine_readable_UPDATED_2024.07.10.csv")
+library(here)
+library(ggplot2)
 
+hyb_ama_data<-read.csv(here("data/processed", "Hybognathus_amarus_processed_machine_readable_2025.07.06.csv"))
+View(hyb_ama_data)
 
 # A plot with continuous x and continuous y (Did psite_count change over time?)
 
-pim_vig_plot_1<-ggplot(pim_vig_data,aes(YearCollected,psite_count))+
+hyb_ama_plot_1<-ggplot(hyb_ama_data,aes(YearCollected,psite_count))+
   #scale_color_manual(values=c("#0571b0","#ca0020"))+
   geom_point(size=4)+
   #geom_errorbar(data=pim_vig_data,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),width=0.03)+
@@ -26,10 +29,9 @@ pim_vig_plot_1<-ggplot(pim_vig_data,aes(YearCollected,psite_count))+
 #theme(legend.position="none")
 
 
-# A plot with continuous x and continuous y and multiple series (Was change in psite_count over time
-# different in control versus impact sites?)
+# A plot with continuous x and continuous y and multiple series (Was change in psite_count over time different in control versus impact sites?)
 
-pim_vig_plot_2<-ggplot(pim_vig_data,aes(YearCollected,psite_count,color=CI),grouping=CI,color=CI)+
+hyb_ama_plot_2<-ggplot(hyb_ama_data,aes(YearCollected,psite_count,color=CI),grouping=CI,color=CI)+
   #scale_color_manual(values=c("#0571b0","#ca0020"))+
   geom_point(size=4)+
   #geom_errorbar(data=pim_vig_data,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),width=0.03)+
@@ -43,7 +45,7 @@ pim_vig_plot_2<-ggplot(pim_vig_data,aes(YearCollected,psite_count,color=CI),grou
 
 # A plot with categorical x and continuous y (Was psite_count different between control and impact sites?)
 
-pim_vig_plot_3<-ggplot(pim_vig_data,aes(CI,psite_count))+
+hyb_ama_plot_3<-ggplot(hyb_ama_data,aes(CI,psite_count))+
   #scale_color_manual(values=c("#0571b0","#ca0020"))+
   geom_boxplot(size=4)+
   #geom_errorbar(data=pim_vig_data,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),width=0.03)+
@@ -55,10 +57,9 @@ pim_vig_plot_3<-ggplot(pim_vig_data,aes(CI,psite_count))+
   #theme(legend.position="none")
 
 
-# A plot with categorical x and continuous y and multiple series (Was psite_count different between control and
-# impact sites, and was this difference consistent across decades?)
+# A plot with categorical x and continuous y and multiple series (Was psite_count different between control and impact sites, and was this difference consistent across decades?)
 
-pim_vig_plot_4<-ggplot(pim_vig_data,aes(CI,psite_count,color=combo),grouping=CI,color=combo)+
+hyb_ama_plot_4<-ggplot(hyb_ama_data,aes(CI,psite_count,color=combo),grouping=CI,color=combo)+
   #scale_color_manual(values=c("#0571b0","#ca0020"))+
   geom_boxplot(size=4)+
   #geom_errorbar(data=pim_vig_data,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),width=0.03)+
