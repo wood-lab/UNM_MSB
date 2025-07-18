@@ -93,11 +93,72 @@ plot(hybama_model)
 
 # connor alternate model 
 ```{r}
+# mutate year into a factor
+hybama_data <- hybama_data %>% 
+  mutate(year_collected = as.factor(year_collected))
+print(unique(hybama_data$year_collected))
+# levels: 1939 1943 1947 1949 1959 1977 1978 1984 1986 1987 1988 1994 1995 1996 1997 1999 (reference level is 1939)
+
+# how many observations are in each of the years? 
+year.reps <- hybama_data %>% 
+  group_by(year_collected) %>% 
+  summarize(observations = n(), .groups = "drop")
+
+# 1978 has the most repliates, so set this as the reference level
+hybama_data <- hybama_data %>%
+  mutate(year_collected = relevel(as.factor(year_collected), ref = "1978"))
+
 connor_test <- glmmTMB(total_length_mm ~ ci*year_collected + (1|catalog_number), 
                        data = hybama_data)
 simulateResiduals(fittedModel = connor_test, plot = TRUE)
 summary(connor_test)
 plot(parameters(connor_test))
+
+
+
+#### run the same sort of model but using decade instead of year
+# add decade column
+hybama_data <- hybama_data %>%
+  mutate(
+    year_collected = as.factor(year_collected),
+    decade = as.numeric(as.character(year_collected)) %/% 10 * 10
+  )
+# convert decade to factor and check levels
+hybama_data <- hybama_data %>% 
+  mutate(decade = as.factor(decade))
+print(unique(hybama_data$decade))
+# Levels: 1930 1940 1950 1970 1980 1990
+
+# count up number of replicates in each decade
+decade.reps <- hybama_data %>% 
+  group_by(decade) %>% 
+  summarize(observations = n(), .groups = "drop")
+# 1990 has the most reps, so set that as reference 
+hybama_data <- hybama_data %>%
+  mutate(decade = relevel(as.factor(decade), ref = "1990"))
+
+# now run models
+
+connor_test_decade <- glmmTMB(total_length_mm ~ ci*decade + (1|catalog_number), 
+                       data = hybama_data)
+simulateResiduals(fittedModel = connor_test_decade, plot = TRUE)
+summary(connor_test_decade)
+plot(parameters(connor_test_decade))
+
+
+
+########### simple model 
+
+connor_test_simple <- glmmTMB(total_length_mm ~ ci + (1|catalog_number) + (1|year_collected), 
+                       data = hybama_data)
+simulateResiduals(fittedModel = connor_test_simple, plot = TRUE) # variance homogeneous :(
+summary(connor_test_simple)
+plot(parameters(connor_test_simple))
+
+plot(residuals(connor_test_simple) ~ fitted(connor_test_simple)) # since this dispersion is random it is ok to ignore the significant lavenes test results
+
+# model is a fine fit, no effect of ci is present in fish size
+
 ```
 
 
