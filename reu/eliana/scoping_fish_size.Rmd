@@ -143,13 +143,16 @@ ggplot(data=gamaff_today, aes(year_fish_collected,total_length_mm, color=ci)) +
 ```{r}
 gamaff_model <- lmerTest::lmer(total_length_mm~(ci*year_fish_collected) + (1|catalog_number), data= gamaff_today)
 summary(gamaff_model)
-
 plot(gamaff_model)
+
+# troubleshooting w connor's help
+gamaff_model2 <- lmerTest::lmer(total_length_mm~(ci + year_fish_collected) + (1|catalog_number), data= gamaff_today)
+summary(gamaff_model2)
 ```
 
 ## Plotting Models
 ```{r}
-gamaff_pred <- ggpredict(gamaff_model, c("year_fish_collected [n=100]", "ci"))
+gamaff_pred <- ggpredict(gamaff_model2, c("year_fish_collected", "ci"))
 
 plot(gamaff_pred, show_data = TRUE, dot_alpha = 1) + 
   labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
