@@ -3,6 +3,8 @@ library(readr)
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
+install.packages(glmmTMB)
+library(glmmTMB)
 
 HYBAMA_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/ABQ_DATA/IND_PROJ_BRADYN/data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
@@ -64,10 +66,11 @@ above_corrales_alevee<-above_corrales_levee[tolower(above_corrales_levee$before_
 
 #plots for Above corrales
 plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected) # instead of looking at sums of counts we want to see the average occurance at each setting (see code below)
+view(BACI_levee)
+averages <- BACI_levee %>% 
+  group_by(corrales_locale,before_after_corrales) %>% 
+  summarize(avg.bin= mean(parasite_sum))
 
-averages <- above_corrales_levee %>% 
-  group_by(XXXwhatever you want to knowXXX) %>% 
-  summarize(observations = n(), .groups = "drop")
 
 summary(lm(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected))
 plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected,
@@ -84,7 +87,7 @@ summary(regression_above)
 #filter for below and in corrales
 
 below_corrales_levee<-BACI_levee[
-  tolower(BACI_levee$corrales_locale)%in%c("below","within"),
+  tolower(BACI_levee$parasite_sum)%in%c("below","within"),
   ]
 #must be above west middle rio grande
 true_below_corrales<-below_corrales_levee[
@@ -148,5 +151,6 @@ plot(below_wamrg_levee$parasite_sum ~ below_wamrg_levee$YearCollected,
 wamrg_regression <-lm(parasite_sum ~ YearCollected,data=below_wamrg_levee)
 abline(wamrg_regression, col="blue", lwd=2)
 summary(wamrg_regression)
+
 
 
