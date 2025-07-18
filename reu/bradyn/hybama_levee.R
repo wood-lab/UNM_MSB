@@ -9,6 +9,10 @@ levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
 #Setting Angostura and Cochiti dam bounds
 #setting Corrales Levee bounds
 
+# connor load datasets 
+HYBAMA_data<- read.csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
+levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
+
 ab_corrales_levee <- HYBAMA_data %>% 
   mutate(corrales_locale = case_when(
     Latitude > 35.28136319711 ~"corrales_levee_above",
@@ -57,7 +61,12 @@ view(above_corrales_blevee)
 above_corrales_alevee<-above_corrales_levee[tolower(above_corrales_levee$before_after_corrales)=="after_corrales",]
 
 #plots for Above corrales
-plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected)
+plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected) # instead of looking at sums of counts we want to see the average occurance at each setting (see code below)
+
+averages <- above_corrales_levee %>% 
+  group_by(XXXwhatever you want to knowXXX) %>% 
+  summarize(observations = n(), .groups = "drop")
+
 summary(lm(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected))
 
 
