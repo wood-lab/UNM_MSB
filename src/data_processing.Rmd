@@ -258,7 +258,7 @@ View(gamaff_with_metadata)
 #hybama_with_metadata_tidy <- hybama_with_metadata_tidy %>% 
 # select (-c(fish_species_1, fish_barcode_1, msb_fish_catalog_number, tissues, island, island_group, verbatim_elevation, lat_long_comments))
 
-view(gamaff_with_metadata_tidy)
+#view(gamaff_with_metadata_tidy)
 ```
 
 Plot to see where the dissected fish fall.
@@ -274,47 +274,45 @@ gamaff_headers<-as.factor(gamaff_headers)
 ## Add parasites across organs and double what needs to be doubled.
 Notes:
 - cyst.unk is NOT a parasite
-- trem_unk_conn and trem_unk_flush are columns of entirely zeros, so were not included in this
-- myxo.susp was determined to be NOT a parasite
+- trem.unk IS a parasite, since even though it is unidentified, it was at least recognized as a trematode
+- nem.sty is not a parasite: determined to be free-living 
+- cest.four is not a parasite
+- after conferring with Irvin and seeing multiple specimens, I believe cest.a and cest.botsp are the same parasite, and a is just a more mature form. I have combined them in the below code
 ```{r gamaff_parasites}
-mono.gyro<-2*(hybama_with_metadata_tidy$mono_gyro_pectoralfin)+2*(hybama_with_metadata_tidy$mono_gyro_pelvicfin)+hybama_with_metadata_tidy$mono_gyro_analfin+hybama_with_metadata_tidy$mono_gyro_caudalfin+hybama_with_metadata_tidy$mono_gyro_dorsalfin+2*(hybama_with_metadata_tidy$mono_gyro_gill)+hybama_with_metadata_tidy$mono_gyro_flush
+crus.d <- gamaff_with_metadata$crus_d_skin + 2*(gamaff_with_metadata$crus_d_gill)
 
-trem.fim <- 2*(hybama_with_metadata_tidy$trem_fim_pectoralfin)+hybama_with_metadata_tidy$trem_fim_caudalfin
+crus.lersp <- gamaff_with_metadata$crus_lersp_flush
 
-cope.lern <- 2*(hybama_with_metadata_tidy$cope_lern_pelvicfin)+hybama_with_metadata_tidy$cope_lern_analfin+hybama_with_metadata_tidy$cope_lern_flush
+mono.gyro <- gamaff_with_metadata$mono_gyro_analfin + gamaff_with_metadata$mono_gyro_dorsalfin
 
-cope.imler <- hybama_with_metadata_tidy$cope_imler_analfin
+mono.salsp <- 2*(gamaff_with_metadata$mono_salsp_gill)
 
-trem.meta.unk <- hybama_with_metadata_tidy$trem_meta_unk_caudalfin + hybama_with_metadata_tidy$trem_meta_unk_caudalfin + 2*(hybama_with_metadata_tidy$meta_unk_gill)
+mono.ss <- 2*(gamaff_with_metadata$mono_ss_gills)
 
-trem.diplo <- hybama_with_metadata_tidy$trem_diplo_liver + 2*(hybama_with_metadata_tidy$trem_diplo_eye) + hybama_with_metadata_tidy$trem_diplo_conn + hybama_with_metadata_tidy$trem_diplo_flush
+trem.dips <- 2*(gamaff_with_metadata$trem_dips_eye) + gamaff_with_metadata$trem_dips_connective_tissue + gamaff_with_metadata$trem_dips_flush
 
-trem.d <- hybama_with_metadata_tidy$trem_d_liver + hybama_with_metadata_tidy$trem_d_conn + hybama_with_metadata_tidy$trem_d_flush
+trem.iz <- gamaff_with_metadata$trem_iz_intestine
 
-trem.gold <- hybama_with_metadata_tidy$trem_gold_liver + hybama_with_metadata_tidy$trem_gold_conn
+trem.unk <- gamaff_with_metadata$trem_unk_gill
 
-trem.em <- hybama_with_metadata_tidy$trem_em_eye 
+nem.larv <- gamaff_with_metadata$nem_larv_connectivetissue + gamaff_with_metadata$nem_larv_intestine
 
-trem.l <- hybama_with_metadata_tidy$trem_l_conn + hybama_with_metadata_tidy$trem_l_flush
+nem.l <- gamaff_with_metadata$nema_l_connective_tissue
 
-trem.b <- hybama_with_metadata_tidy$trem_b_conn + hybama_with_metadata_tidy$trem_b_flush
+nem.myst <- gamaff_with_metadata$nema_myst_intestine
 
-trem.dlum <- hybama_with_metadata_tidy$trem_dlum_flush
+acanth.spk <- gamaff_with_metadata$acanth_spk_flush
 
-trem.ridge <- hybama_with_metadata_tidy$trem_ridge_flush
+cest.botsp <- gamaff_with_metadata$cest_a_intestine + gamaff_with_metadata$cest_botsp_intestine
 
-nem.cl <- hybama_with_metadata_tidy$nem_cl_int
+myxo.myxid <- gamaff_with_metadata$myxo_mxyid_gallbladder_presence1_absence0
 
-nem.unk <- hybama_with_metadata_tidy$nema_unk_int
-
-mono.dact <- 2*(hybama_with_metadata_tidy$mono_dact_gill)
-
-myxo.b <- 2*(hybama_with_metadata_tidy$myxo_b_gill)
+myxo.g <- 2*(gamaff_with_metadata$myxo_g_gill)
 ```
 
 Quickly evaluating relationship between total length and weight to check for any potential abnormalities.
-```{r hybama_weight_check}
-ggplot(hybama_with_metadata_tidy,aes(total_length_mm,weight_mg))+
+```{r gamaff_weight_check}
+ggplot(gamaff_with_metadata,aes(total_length_mm,weight_mg))+
   geom_point(size=4)
 ```
 Looks good!
@@ -322,73 +320,71 @@ Looks good!
 ## Putting it all together
 
 Put the columns into one dataframe...
-```{r hybama_all_together_now}
-hybama_processed_data<-cbind.data.frame(
-  hybama_with_metadata_tidy$catalog_number,
-  hybama_with_metadata_tidy$year_fish_collected,        
-  hybama_with_metadata_tidy$month_collected, 
-  hybama_with_metadata_tidy$day_fish_collected,         
-  hybama_with_metadata_tidy$individual_id,
-  hybama_with_metadata_tidy$fish_barcode,
-  hybama_with_metadata_tidy$dissector,
-  hybama_with_metadata_tidy$examiner, 
-  hybama_with_metadata_tidy$dissection_date, 
-  hybama_with_metadata_tidy$sex, 
-  hybama_with_metadata_tidy$total_length_mm, 
-  hybama_with_metadata_tidy$standard_length_mm,
-  hybama_with_metadata_tidy$weight_mg, 
-  hybama_with_metadata_tidy$ci, 
-  hybama_with_metadata_tidy$combo, 
-  hybama_with_metadata_tidy$latitude, 
-  hybama_with_metadata_tidy$longitude, 
-  cope.imler, 
-  cope.lern, 
-  mono.dact, 
+```{r gamaff_all_together_now}
+gamaff_processed_data<-cbind.data.frame(
+  gamaff_with_metadata$catalog_number,
+  gamaff_with_metadata$year_fish_collected,        
+  gamaff_with_metadata$month_collected, 
+  gamaff_with_metadata$day_fish_collected,         
+  gamaff_with_metadata$individual_id,
+  gamaff_with_metadata$fish_barcode,
+  gamaff_with_metadata$dissector,
+  gamaff_with_metadata$examiner, 
+  gamaff_with_metadata$dissection_date, 
+  gamaff_with_metadata$sex, 
+  gamaff_with_metadata$total_length_mm, 
+  gamaff_with_metadata$standard_length_mm,
+  gamaff_with_metadata$weight_mg, 
+  gamaff_with_metadata$ci, 
+  gamaff_with_metadata$combo, 
+  gamaff_with_metadata$latitude, 
+  gamaff_with_metadata$longitude, 
+  crus.d, 
+  crus.lersp, 
   mono.gyro, 
-  myxo.b, 
-  nem.cl, 
-  nem.unk, 
-  trem.b, 
-  trem.d, 
-  trem.diplo, 
-  trem.dlum, 
-  trem.em, 
-  trem.fim, 
-  trem.gold, 
-  trem.l, 
-  trem.meta.unk, 
-  trem.ridge)
+  mono.salsp, 
+  mono.ss,
+  trem.dips, 
+  trem.iz, 
+  trem.unk, 
+  nem.larv, 
+  nem.l, 
+  nem.myst, 
+  acanth.spk, 
+  cest.botsp, 
+  myxo.myxid, 
+  myxo.g)
 
 ```
 
 
 Name the columns...
-```{r hybama_columns}
-colnames(hybama_processed_data)[1]<-"CatalogNumber"
-colnames(hybama_processed_data)[2]<-"YearCollected"
-colnames(hybama_processed_data)[3]<-"MonthCollected"
-colnames(hybama_processed_data)[4]<-"DayCollected"
-colnames(hybama_processed_data)[5]<-"IndividualFishID"
-colnames(hybama_processed_data)[6] <- "FishBarcode"
-colnames(hybama_processed_data)[7]<-"Dissector"
-colnames(hybama_processed_data)[8] <- "Examiner"
-colnames(hybama_processed_data)[9]<-"DissectionDate"
-colnames(hybama_processed_data)[10]<-"Sex"
-colnames(hybama_processed_data)[11]<-"TotalLength_mm"
-colnames(hybama_processed_data)[12]<-"StandardLength_mm"
-colnames(hybama_processed_data)[13]<-"Weight_mg"
-colnames(hybama_processed_data)[14]<-"CI"
-colnames(hybama_processed_data)[15]<-"combo"
-colnames(hybama_processed_data)[16]<-"Latitude"
-colnames(hybama_processed_data)[17]<-"Longitude"
+```{r gamaff_columns}
+colnames(gamaff_processed_data)[1]<-"CatalogNumber"
+colnames(gamaff_processed_data)[2]<-"YearCollected"
+colnames(gamaff_processed_data)[3]<-"MonthCollected"
+colnames(gamaff_processed_data)[4]<-"DayCollected"
+colnames(gamaff_processed_data)[5]<-"IndividualFishID"
+colnames(gamaff_processed_data)[6] <- "FishBarcode"
+colnames(gamaff_processed_data)[7]<-"Dissector"
+colnames(gamaff_processed_data)[8] <- "Examiner"
+colnames(gamaff_processed_data)[9]<-"DissectionDate"
+colnames(gamaff_processed_data)[10]<-"Sex"
+colnames(gamaff_processed_data)[11]<-"TotalLength_mm"
+colnames(gamaff_processed_data)[12]<-"StandardLength_mm"
+colnames(gamaff_processed_data)[13]<-"Weight_mg"
+colnames(gamaff_processed_data)[14]<-"CI"
+colnames(gamaff_processed_data)[15]<-"combo"
+colnames(gamaff_processed_data)[16]<-"Latitude"
+colnames(gamaff_processed_data)[17]<-"Longitude"
 
-view(hybama_processed_data)
+view(gamaff_processed_data)
 ```
 
 ## Make the dataset analyzable
 
-```{r make_dataset_analyzable}
-hybama_processed_data_longer<-melt(hybama_processed_data,id=c(
+```{r gamaff_analyzable}
+gamaff_processed_data_longer<-melt(gamaff_processed_data,id=c(
   "CatalogNumber", 
   "YearCollected", 
   "MonthCollected", 
@@ -406,19 +402,19 @@ hybama_processed_data_longer<-melt(hybama_processed_data,id=c(
   "Latitude",
   "Longitude"))
 
-colnames(hybama_processed_data_longer)[18]<-"psite_spp"
-colnames(hybama_processed_data_longer)[19]<-"psite_count"
+colnames(gamaff_processed_data_longer)[18]<-"psite_spp"
+colnames(gamaff_processed_data_longer)[19]<-"psite_count"
 
 # Fix data type for weight. Otherwise, it is read as a character and weight is plotted wrong.
 
-hybama_processed_data_longer$Weight_mg <- as.numeric(hybama_processed_data_longer$Weight_mg)
+gamaff_processed_data_longer$Weight_mg <- as.numeric(gamaff_processed_data_longer$Weight_mg)
 ```
 
 ## Export both sheets
 
-```{r hybama_export}
-write.csv(hybama_processed_data_longer, file= "Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
+```{r gamaff_export}
+write.csv(gamaff_processed_data_longer, file= "Gambusia_affinis_processed_machine_readable_2025.07.21.csv")
 
-write.csv(hybama_processed_data, file="Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
+write.csv(gamaff_processed_data, file="Gambusia_affinis_processed_human_readable_2025.07.21.csv")
 ```
 
