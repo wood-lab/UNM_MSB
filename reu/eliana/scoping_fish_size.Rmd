@@ -216,12 +216,16 @@ summary(gamaff_model)
 plot(gamaff_model)
 
 # troubleshooting w connor's help
-gamaff_model2 <- glmmTMB(total_length_mm~ year_fish_collected + latitude + (1|catalog_number), data= gamaff_today)
+gamaff_model2 <- glmmTMB(total_length_mm~ year_fish_collected + latitude +  (1|catalog_number), data= gamaff_today)
 summary(gamaff_model2)
 # both latitude and year are significant predictors! but ci is not, and neither are interactive effects with year and latitude/ci
 
-gamaff_model3 <- glmmTMB(total_length_mm ~ ci + (1|catalog_number), data=gamaff_today)
+gamaff_model3 <- glmmTMB(total_length_mm ~ year_fish_collected*latitude +  (1|catalog_number), data=gamaff_today)
 summary(gamaff_model3)
+
+as.integer(gamaff_today$latitude)
+
+#test if lat and ci are colinear 
 ```
 
 ## Plotting Models
