@@ -12,6 +12,7 @@ library(lme4)
 library(car)
 library(ggeffects)
 library(reshape2)
+library(MASS)
 
 
 # R is really useful for doing quick tallies and plots.
@@ -47,19 +48,23 @@ levels(as.factor(diplo_data_separate$psite_spp))
 # trem.em). Let's do that with a pipe:
 
 diplo_data <- diplo_data_separate %>%
-  group_by(IndividualFishID) %>%
+  group_by(IndividualFishID, CatalogNumber, YearCollected, DissectionDate, TotalLength_mm, CI, combo, Latitude, Longitude) %>%
   summarize(diplo = sum(psite_count))
 diplo_data
 
 
 # Cool. Now we just need to merge in the bird data.
 
-bird_data<-read.csv("reu/janell/Bird Data - Sheet2.csv")
+bird_data<-read.csv("reu/janell/bird_data_cleaned.csv")
 
 diplo_plus_birds <- merge(diplo_data, bird_data, by.x = "YearCollected", by.y = "Year", all.x = TRUE)
+head(diplo_plus_birds)
 
 
+### PRELIMINARY ANALYSIS - CHELSEA, 21 JULY 2025
 
-### PRELIMINARY ANALYSIS - CHELSEA, 20 JULY 2025
+plot(diplo_plus_birds$diplo~diplo_plus_birds$Sum.of.Number.Party.Hours)
 
-
+model_1<-glm.nb(diplo~Sum.of.Number.Party.Hours+
+                    offset(log(TotalLength_mm)),data=diplo_plus_birds)
+summary(model_1)
