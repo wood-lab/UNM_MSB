@@ -31,7 +31,8 @@ hyb_ama_plot_1<-ggplot(hyb_ama_data,aes(YearCollected,psite_count))+
 
 # A plot with continuous x and continuous y and multiple series (Was change in psite_count over time different in control versus impact sites?)
 
-hyb_ama_plot_2<-ggplot(hyb_ama_data,aes(YearCollected,psite_count,color=CI),grouping=CI,color=CI)+
+
+ggplot(hyb_ama_data,aes(YearCollected,psite_count,color=CI),grouping=CI,color=CI)+
   #scale_color_manual(values=c("#0571b0","#ca0020"))+
   geom_point(size=4)+
   #geom_errorbar(data=pim_vig_data,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),width=0.03)+
