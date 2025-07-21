@@ -300,3 +300,6 @@ We replaced MSB:Fish:1080 (only 10 fish) with MSB:Fish:1089.
 
 ### 7/18/25
 Discovered a lot (MSB:Fish:7239) where there are not 5 fish that fit the latitude rule. HOWEVER, as of 7/17/25, our latitude trend has disappeared. So, Gabby made the executive call to go ahead and dissect the jar anyways, making it a TRUE random selection. This was noted on the datasheet. 
+
+### 7/21/25
+Discovered a lot (MSB:Fish:6300) where there are not 5 fish that fit the latitude rule. We decided to go ahead and dissect the jar anyways since the latitude trend has disappeared. This was noted on the datasheet. 
