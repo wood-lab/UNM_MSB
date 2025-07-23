@@ -4,6 +4,9 @@ library(dplyr)
 library(tidyverse)
 library(ggplot2)
 library(glmmTMB)
+library(parameters)
+library(DHARMa)
+library(emmeans)
 
 HYBAMA_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/ABQ_DATA/IND_PROJ_BRADYN/data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
@@ -115,7 +118,15 @@ xtabs(~ e_amrg_locale + before_after_eamrg, data = BACI_levee)
 
 model$sdr$pdHess
 
-summary(model)
+# here are all the model diagnostics and outputs:
+simulateResiduals(fittedModel = model, plot = TRUE) # if the model was a good fit, the QQ plot would have points hugging the red line, and the carPred plot on the right would be just a scattering of random points -- so this model is a bad fit 
+summary(model) # the NAs mean it is rank deficient -- there arent enough observations in those categories to draw comparisons (which is to be expected bc we are only working with one species, very few fish)
+plot(parameters(model)) # if the bars do NOT pass over 0 it is a significant result (red is neg, blue is positive) -- just for visualization
+
+# the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
+emm <- emmeans(model, ~ corrales_locale*before_after_corrales)
+joint_tests(model) # idk what to make of this output at the moment
+
 
 names(df)
 str(df)
