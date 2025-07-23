@@ -298,6 +298,8 @@ Today we uncovered MSB:Fish:4440, where there the fish are too small to fit the 
 
 We replaced MSB:Fish:1080 (only 10 fish) with MSB:Fish:1089. 
 
+MSB:Fish:340 has only ten fish in the jar, but there is not another lot from the same decade/impact combo. Initially we skipped this jar, but later Chelsea opted to replace it. It was collected in 1949 so I attempted to replace it with a lot from "impact_1951-1960", but apparently there is only one jar in that category and we already dissected it. 
+
 ### 7/18/25
 Discovered a lot (MSB:Fish:7239) where there are not 5 fish that fit the latitude rule. HOWEVER, as of 7/17/25, our latitude trend has disappeared. So, Gabby made the executive call to go ahead and dissect the jar anyways, making it a TRUE random selection. This was noted on the datasheet. 
 

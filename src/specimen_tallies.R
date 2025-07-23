@@ -568,4 +568,6 @@ impact_1931to1940 <- gam_aff[ sample( which( gam_aff$combo == "impact_1931-1940"
 
 # Replace GAMAFF MSB:Fish:340 (only 10 fish in jar)
 impact_1941to1950 <- gam_aff[ sample( which( gam_aff$combo == "impact_1941-1950"), 8, replace = F), ]
-# No replacements! Will not dissect
+# No replacements in the same decade category! Jar collected in 1949, so will attempt to select from the next decade combo
+impact_1951to1960 <- gam_aff[ sample( which( gam_aff$combo == "impact_1951-1960"), 1, replace = F), ]
+# Somehow only one single jar falls under "impact_1951-1960" and we already dissected it...
