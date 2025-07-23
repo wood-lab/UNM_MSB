@@ -3,14 +3,13 @@ library(readr)
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
-install.packages(glmmTMB)
 library(glmmTMB)
 
 HYBAMA_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/ABQ_DATA/IND_PROJ_BRADYN/data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
 #Setting Angostura and Cochiti dam bounds
-#setting Corrales Levee bounds
 
+#setting Corrales Levee bounds
 # connor load datasets 
 HYBAMA_data<- read.csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
@@ -50,7 +49,35 @@ before_ab_amrg_wlevee<-ab_amrg_wlevee %>%
     TRUE ~ "no_intervention"
   ))
 #renaming data
-BACI_levee<-before_ab_amrg_wlevee
+few_levee<-before_ab_amrg_wlevee
+#Setting Sandoval Levee bounds
+ab_sandoval_levee<-few_levee %>% 
+  mutate(sandoval_locale = case_when(
+    Latitude > 35.376442340109 ~"above",
+    Latitude>= 35.2268848801106 & Latitude <= 35.376442340109 ~ "within",
+    Latitude < 35.2268848801106 ~"below",
+    TRUE ~ "no_intervention"
+  ))
+#Setting Sandoval Levee construction dates
+before_ab_sandoval_levee<-ab_sandoval_levee %>% 
+  mutate(before_after_sandoval=case_when(
+    YearCollected>=1935~"after",
+    YearCollected>=1930 & YearCollected <1935 ~"during",
+    YearCollected<1930 ~"before",
+    TRUE ~ "no_intervention"
+  ))
+#Setting Alb. Middle Rio Grande East Levee System One and Two
+ab_amrg_elevee<-before_ab_sandoval_levee %>% 
+  mutate(e_amrg_locale = case_when(
+    Latitude > 35.22783185411061 ~ "above",
+    Latitude >= 35.00309478973807 & Latitude <= 35.22783185411061 ~ "within",
+    Latitude < 35.00309478973807 ~ "below",
+    TRUE ~ "no_intervention"
+  ))
+view(ab_amrg_elevee)
+#BACI_levee
+BACI_levee<-ab_sandoval_levee
+view(BACI_levee)
 #Summing parasite counts
 BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge")], na.rm=TRUE)
 
@@ -66,8 +93,8 @@ above_corrales_alevee<-above_corrales_levee[tolower(above_corrales_levee$before_
 
 #plots for Above corrales
 plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected) # instead of looking at sums of counts we want to see the average occurance at each setting (see code below)
-view(BACI_levee)
-averages <- BACI_levee %>% 
+view(HYBAMA_data)
+averages <- HYBAMA_data %>% 
   group_by(corrales_locale,before_after_corrales) %>% 
   summarize(avg.bin= mean(parasite_sum))
 
