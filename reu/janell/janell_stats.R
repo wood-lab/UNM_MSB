@@ -25,24 +25,29 @@ install.packages("MASS")
 
 hyb_ama_data<-read.csv("data/processed/Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
 view(hyb_ama_data)
-
+gam_aff_data<-read.csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.07.21.csv")
+View(gam_aff_data)
 
 
 # Let's do some quick data tallies - we can see how many values we have for estimates of each parasite species in each
 # host across the different treatment-decade combinations
 
 tally_up <- hyb_ama_data %>%
-  group_by(combo) %>%
+  group_by(combo) %>% 
   summarize(n = n())
 tally_up()
 
-hyb_ama_data %>% group_by(combo) %>% summarise(n = n())
+hyb_ama_data %>% group_by(combo) %>% summarize(n = n())
+
+gam_aff_data %>% group_by(combo) %>% summarize(n = n())
+
 
 
 # First, we need to limit our dataset to just the diplostomatids. Let's see which parasite categories exist, and which
 # we need to prune out.
 
 levels(as.factor(hyb_ama_data$psite_spp))
+levels(as.factor(gam_aff_data$pstite.spp))
 
 
 # Looks like we want trem.diplo, trem.dlum, and trem.em. Let's trim the dataset so that it includes only those taxa.
