@@ -26,6 +26,8 @@ install.packages("MASS")
 hyb_ama_data<-read.csv("data/processed/Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
 view(hyb_ama_data)
 
+
+
 # Let's do some quick data tallies - we can see how many values we have for estimates of each parasite species in each
 # host across the different treatment-decade combinations
 
