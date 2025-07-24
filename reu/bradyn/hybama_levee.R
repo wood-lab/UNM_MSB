@@ -4,7 +4,6 @@ library(dplyr)
 library(tidyverse)
 library(ggplot2)
 library(glmmTMB)
-install.packages(c("parameters","DHARMa","emmeans"))
 library(parameters)
 library(DHARMa)
 library(emmeans)
@@ -17,22 +16,33 @@ HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
 GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_human_readable_2025.07.21.csv")
 two_fish_data<- bind_rows(HYBAMA_data,GAMAFF_data)
 view(two_fish_data)
-view(HYBAMA_data)
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
-#Setting Angostura and Cochiti dam bounds
+#Setting Cochiti dam bounds and dates
+cochiti_dam<-two_fish_data %>% 
+  mutate(dam_locale = case_when(
+    Latitude >= 35.2 & Latitude <=35.6481 ~"cochiti_bound",
+    TRUE ~ "no_intervention"
+  ))
+
+BACI_dam<-cochiti_dam %>% 
+  mutate(dam_CI=case_when(
+    YearCollected>=1975~"impact",
+    YearCollected<1975~"control",
+    TRUE~"no_intervention"
+  ))
+view(BACI_dam)
 #setting Corrales Levee bounds
 # connor load datasets 
 HYBAMA_data<- read.csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
 
-ab_corrales_levee <- two_fish_data %>% 
+ab_corrales_levee <- BACI_dam %>% 
   mutate(corrales_locale = case_when(
     Latitude > 35.28136319711 ~"above",
     Latitude >= 35.1609175651113 & Latitude <= 35.28136319711 ~ "within",
     Latitude < 35.1609175651113 ~ "below",
     TRUE ~ "no_intervention"
   ))
-#Dam system Locations and Dates
 
 #setting Corrales levee construction date
 before_ab_corrales_levee <- ab_corrales_levee %>% 
@@ -114,18 +124,23 @@ above_corrales_alevee<-above_corrales_levee[tolower(above_corrales_levee$before_
 plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected) # instead of looking at sums of counts we want to see the average occurance at each setting (see code below)
 view(BACI_levee)
 averages <- BACI_levee %>% 
-  group_by(corrales_locale,before_after_corrales) %>% 
+  group_by(dam_locale,dam_CI) %>% 
   summarize(avg.bin= mean(parasite_sum))
+
 str(averages)
 
 #Attempting to model data IGNORE ALL I HAVE NO IDEA WHAT IM DOING
-model2<-glmmTMB(
-  parasite_sum~corrales_locale*before_after_corrales, 
-  data=BACI_levee 
+cochiti_filter <- BACI_levee %>%
+  filter(dam_locale %in% c("cochiti_bound"))
+view(cochiti_filter)
+xtabs(~ dam_locale + dam_CI, data = cochiti_filter)
+
+model<-glmmTMB(
+  parasite_sum~ corrales_locale*before_after_corrales, 
+  data= BACI_levee 
   )
-view(BACI_levee)
-xtabs(~ e_amrg_locale + before_after_eamrg, data = BACI_levee)
-xtabs(~corrales_locale + before_after_corrales, data = BACI_levee)
+xtabs(~ dam_locale + dam_CI, data = cochiti_filter)
+
 model$sdr$pdHess
 
 # here are all the model diagnostics and outputs:
@@ -134,7 +149,7 @@ summary(model) # the NAs mean it is rank deficient -- there arent enough observa
 plot(parameters(model)) # if the bars do NOT pass over 0 it is a significant result (red is neg, blue is positive) -- just for visualization
 
 # the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
-emm <- emmeans(model, ~ corrales_locale*before_after_corrales)
+emm <- emmeans(model, ~ dam_locale*dam_CI)
 joint_tests(model) # idk what to make of this output at the moment
 
 
