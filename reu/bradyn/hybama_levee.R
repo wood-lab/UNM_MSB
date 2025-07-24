@@ -4,11 +4,20 @@ library(dplyr)
 library(tidyverse)
 library(ggplot2)
 library(glmmTMB)
+install.packages(c("parameters","DHARMa","emmeans"))
 library(parameters)
 library(DHARMa)
 library(emmeans)
 
-HYBAMA_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/ABQ_DATA/IND_PROJ_BRADYN/data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
+HYBAMA_data<- read_csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv", 
+                       col_types = cols(Sex = col_character()))
+HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
+                  ifelse(HYBAMA_data$Sex == FALSE, "F", NA))
+
+GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_human_readable_2025.07.21.csv")
+two_fish_data<- bind_rows(HYBAMA_data,GAMAFF_data)
+view(two_fish_data)
+view(HYBAMA_data)
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
 #Setting Angostura and Cochiti dam bounds
 #setting Corrales Levee bounds
@@ -16,7 +25,7 @@ levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
 HYBAMA_data<- read.csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
 levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
 
-ab_corrales_levee <- HYBAMA_data %>% 
+ab_corrales_levee <- two_fish_data %>% 
   mutate(corrales_locale = case_when(
     Latitude > 35.28136319711 ~"above",
     Latitude >= 35.1609175651113 & Latitude <= 35.28136319711 ~ "within",
@@ -80,8 +89,8 @@ view(ab_amrg_elevee)
 #Setting Alb. Middle Rio Grande East Levee System One and Two construction dates
 before_ab_amrg_elevee <- ab_amrg_elevee %>% 
   mutate(before_after_eamrg=case_when(
-    YearCollected>=1956 ~"after",
-    YearCollected>=1951 & YearCollected <1956 ~"during",
+    YearCollected>=1969 ~"after",
+    YearCollected>=1951 & YearCollected <1969 ~"during",
     YearCollected<1951 ~"before",
     TRUE ~ "no_intervention"
   ))
@@ -89,7 +98,7 @@ before_ab_amrg_elevee <- ab_amrg_elevee %>%
 BACI_levee<-before_ab_amrg_elevee
 view(BACI_levee)
 #Summing parasite counts
-BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge")], na.rm=TRUE)
+BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge","crus.d","crus.lersp","mono.salsp","mono.ss","trem.dips","trem.iz","trem.unk","nem.larv","nem.l","nem.myst","acanth.spk","cest.botsp","myxo.myxid","myxo.g")], na.rm=TRUE)
 
 #Filter for above Corrales
 above_corrales_levee<-BACI_levee[tolower(BACI_levee$corrales_locale)=="above",]
@@ -108,14 +117,15 @@ averages <- BACI_levee %>%
   group_by(corrales_locale,before_after_corrales) %>% 
   summarize(avg.bin= mean(parasite_sum))
 str(averages)
+
 #Attempting to model data IGNORE ALL I HAVE NO IDEA WHAT IM DOING
-model<-glmmTMB(
+model2<-glmmTMB(
   parasite_sum~corrales_locale*before_after_corrales, 
   data=BACI_levee 
   )
 view(BACI_levee)
 xtabs(~ e_amrg_locale + before_after_eamrg, data = BACI_levee)
-
+xtabs(~corrales_locale + before_after_corrales, data = BACI_levee)
 model$sdr$pdHess
 
 # here are all the model diagnostics and outputs:
@@ -128,10 +138,12 @@ emm <- emmeans(model, ~ corrales_locale*before_after_corrales)
 joint_tests(model) # idk what to make of this output at the moment
 
 
-names(df)
-str(df)
-view(averages)
 
+
+
+
+view(averages)
+view(BACI_levee)
 summary(lm(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected))
 plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected,
      main = "Number of Parasites Above Corrales Levee Over time",
