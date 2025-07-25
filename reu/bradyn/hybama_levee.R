@@ -106,7 +106,22 @@ before_ab_amrg_elevee <- ab_amrg_elevee %>%
   ))
 #BACI_levee
 BACI_levee<-before_ab_amrg_elevee
-view(BACI_levee)
+BACI_levee<-BACI_levee %>% 
+  filter(
+    !corrales_locale%in%c("no_intervention")
+  ) %>% 
+  filter(
+    !before_after_corrales%in%c("no_intervention")
+  )
+
+BACI_levee$before_after_corrales<-factor(BACI_levee$before_after_corrales,levels=
+           c("before","during","after")
+         )
+
+BACI_levee$corrales_locale<-factor(BACI_levee$corrales_locale,levels=
+                                           c("above","within","below")
+)
+
 #Summing parasite counts
 BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge","crus.d","crus.lersp","mono.salsp","mono.ss","trem.dips","trem.iz","trem.unk","nem.larv","nem.l","nem.myst","acanth.spk","cest.botsp","myxo.myxid","myxo.g")], na.rm=TRUE)
 
@@ -120,13 +135,12 @@ above_corrales_blevee<-above_corrales_levee[tolower(above_corrales_levee$before_
 #filter for above and after corrales
 above_corrales_alevee<-above_corrales_levee[tolower(above_corrales_levee$before_after_corrales)=="after",]
 
-#plots for Above corrales
-plot(above_corrales_levee$parasite_sum~above_corrales_levee$YearCollected) # instead of looking at sums of counts we want to see the average occurance at each setting (see code below)
+# instead of looking at sums of counts we want to see the average occurance at each setting (see code below)
 view(BACI_levee)
 averages <- BACI_levee %>% 
   group_by(dam_locale,dam_CI) %>% 
   summarize(avg.bin= mean(parasite_sum))
-
+view(averages)
 str(averages)
 
 #Attempting to model data IGNORE ALL I HAVE NO IDEA WHAT IM DOING
@@ -136,10 +150,15 @@ view(cochiti_filter)
 xtabs(~ dam_locale + dam_CI, data = cochiti_filter)
 
 model<-glmmTMB(
-  parasite_sum~ corrales_locale*before_after_corrales, 
+  parasite_sum~ corrales_locale*before_after_corrales,
+  family = nbinom2(),
   data= BACI_levee 
   )
-xtabs(~ dam_locale + dam_CI, data = cochiti_filter)
+summary<- BACI_levee %>% 
+  group_by(corrales_locale,before_after_corrales) %>% 
+  summarize(total=n())
+
+view(BACI_levee)
 
 model$sdr$pdHess
 
@@ -151,6 +170,10 @@ plot(parameters(model)) # if the bars do NOT pass over 0 it is a significant res
 # the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
 emm <- emmeans(model, ~ dam_locale*dam_CI)
 joint_tests(model) # idk what to make of this output at the moment
+
+
+
+
 
 
 
