@@ -106,7 +106,24 @@ summary(hybama_model2)
 ## Model Selection
 
 ```{r hybama_model_selection}
+AIC(hybama_model)
+AIC(hybama_model1)
+AIC(hybama_model2)
+```
 
+## Plotting Models
+```{r gamaff_plot}
+hybama_pred <- ggpredict(hybama_model1, c("year_collected", "ci"))
+
+plot(hybama_pred, show_data = TRUE, dot_alpha = 1) + 
+  labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
+    scale_color_manual(values = c("control" = "blue", 
+                                "impact" = "red")) +
+  theme_bw() +
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line())
 ```
 
 # connor alternate model (ignore for now) 
