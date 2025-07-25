@@ -30,6 +30,7 @@ library(ggeffects)
 library(glmmTMB)
 library(DHARMa)
 library(parameters)
+library(stats)
 ```
 
 Next, we import the most up-to-date data
@@ -54,12 +55,18 @@ hybama_data <- hybama_data %>%
 view(hybama_data)
 
 # GAMAFF
-# Here, since we don't have polished data yet, I'm importing the most recent dissection data. 
-gam_aff_today <- read.csv(here("data", "GAMAFF Dataset_2025.07.14.csv"))
+# reading in unpolished data
+gam_aff_today<-read.csv(here("data", "GAMAFF Dataset_2025.07.21.csv"))
 gam_aff_with_metadata<-merge(gam_aff_today, meta_data, by = "CatalogNumber", all.x = TRUE)
 gamaff_today <- gam_aff_with_metadata %>% 
   janitor::clean_names()
-View(gamaff_today)
+view(gamaff_today)
+
+# reading in polished data 
+gamaff_data <- read.csv(here("data", "/processed/Gambusia_affinis_processed_human_readable_2025.07.21.csv"))
+gamaff_data <- gamaff_data %>% 
+  janitor::clean_names()
+View(gamaff_data)
 ```
 
 
@@ -84,14 +91,25 @@ ggplot(data=hybama_data, aes(year_collected,total_length_mm, color=ci)) +
 Is there any relationship between year and length depending on CI zone?
 To figure it out, we'll write a model
 ```{r prelim_models}
-hybama_model <- lmerTest::lmer(total_length_mm~(ci*year_collected) + (1|catalog_number), data= hybama_data)
+hybama_model <- glmmTMB(total_length_mm~(ci*year_collected) + (1|catalog_number), data= hybama_data)
 summary(hybama_model)
+# hmm, not super significant! let's try the predictors separately
 
-#this tests to see if the model well balanced. we want to see a random spread above and below the center line. looks good!
-plot(hybama_model)
+hybama_model1 <- glmmTMB(total_length_mm~ year_collected + ci + (1|catalog_number), data= hybama_data)
+summary(hybama_model1)
+# no terms are significant! latitude?
+
+hybama_model2 <- glmmTMB(total_length_mm~ year_collected + latitude + (1|catalog_number), data= hybama_data)
+summary(hybama_model2)
+#again, nothing! looks like there just isn't a significant change in hybama body size over time
+```
+## Model Selection
+
+```{r hybama_model_selection}
+
 ```
 
-# connor alternate model 
+# connor alternate model (ignore for now) 
 ```{r}
 # mutate year into a factor
 hybama_data <- hybama_data %>% 
@@ -196,9 +214,41 @@ plot(hybama_pred, show_data = TRUE, dot_alpha = 1) +
 I'm going to turn it over to you! Try to copy what we did for Hybognathus, but edit it for Gambusia. You can steal all my code from above and change what you need. 
 - NOTE: the dataframe is already loaded in, and is called "gamaff_today" (see the initial steps section). Some columns may have different names that in the Hybognathus code, so make sure to double check (ex "year_collected" in the hybama_data is called "year_fish_collected" in gamaff_today)
 
+## Creating an only randomly selected dataset
+```{r gamaff_random}
+#first, remove all non-randomly selected fish from the dataset by hand (boo) by manually reading datasheet and removing fish which say they have non-random selection
+# using unpolished dataset but the one which includes all fish because we need to see the notes section to know which ones to delete
+gamaff_today_random <- gamaff_today %>%
+      slice(-c(1, 2, 3, 4, 5, 31, 32, 33, 34, 35, 76, 77, 78, 79, 80, 106, 107, 108, 109, 110, 156, 157, 158, 159, 160, 226, 227, 228, 229, 230, 231, 237, 238, 239, 240, 241, 243, 244, 245, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350))
+View(gamaff_today_random)
+# ugh that was so annoying. 
+
+# ok now load in the extra data that eliana collected 
+gamaff_excess <- read.csv(here("reu/eliana", "gamaff_randomized.csv"))
+View(gamaff_excess)
+#add metadata
+excess_with_metadata<-merge(gamaff_excess, meta_data, by = "CatalogNumber", all.x = TRUE)
+excess_with_metadata <- excess_with_metadata %>% 
+  janitor::clean_names()
+View(excess_with_metadata)
+
+# must make sure columns are consistent in both
+gamaff_today_random2 <- gamaff_today_random %>% 
+  select(catalog_number, individual_id, fish_species, year_fish_collected, month_fish_collected, day_fish_collected, total_length_mm, standard_length_mm, weight_mg, latitude, longitude, ci, decade, combo)
+View(gamaff_today_random2)
+
+excess_with_metadata2 <- excess_with_metadata %>% 
+  select(catalog_number, individual_id, fish_species, year_fish_collected, month_fish_collected, day_fish_collected, total_length_mm, standard_length_mm, weight_mg, latitude, longitude, ci, decade, combo)
+View(excess_with_metadata2)
+
+#finally... combine!
+gamaff_random <- rbind(gamaff_today_random2, excess_with_metadata2)
+View(gamaff_random)
+```
+
 ## Data Exploration
-```{r}
-ggplot(data=gamaff_today, aes(year_fish_collected,total_length_mm, color=ci)) + 
+```{r gamaff_explore}
+ggplot(data=gamaff_random, aes(year_fish_collected,total_length_mm, color=ci)) + 
   geom_point() +
   scale_color_manual(values = c("control" = "blue", 
                                 "impact" = "red")) +
@@ -210,27 +260,37 @@ ggplot(data=gamaff_today, aes(year_fish_collected,total_length_mm, color=ci)) +
 ```
 
 ## Preliminary Models
-```{r}
-gamaff_model <- lmerTest::lmer(total_length_mm~(ci*year_fish_collected) + (1|catalog_number), data= gamaff_today)
+```{r gamaff_models}
+gamaff_model <- glmmTMB(total_length_mm~(ci*year_fish_collected) + (1|catalog_number), data= gamaff_random)
 summary(gamaff_model)
-plot(gamaff_model)
+# no significance whatsoever for this model, which represents our hypothesis (that control fish's body size change differently than impact fish). Let's break it down:
 
-# troubleshooting w connor's help
-gamaff_model2 <- glmmTMB(total_length_mm~ year_fish_collected + latitude +  (1|catalog_number), data= gamaff_today)
+gamaff_model2 <- glmmTMB(total_length_mm~ year_fish_collected + ci +  (1|catalog_number), data= gamaff_random)
 summary(gamaff_model2)
-# both latitude and year are significant predictors! but ci is not, and neither are interactive effects with year and latitude/ci
+# year alone is a moderately significant predictor, but ci is not. what about latitude?
 
-gamaff_model3 <- glmmTMB(total_length_mm ~ year_fish_collected*latitude +  (1|catalog_number), data=gamaff_today)
+gamaff_model3 <- glmmTMB(total_length_mm~ year_fish_collected + latitude + (1|catalog_number), data= gamaff_random)
 summary(gamaff_model3)
+# year and latitude are not significant predictors together. what about an interaction?
 
-as.integer(gamaff_today$latitude)
+gamaff_model4 <- glmmTMB(total_length_mm ~ year_fish_collected*latitude +  (1|catalog_number), data=gamaff_random)
+summary(gamaff_model4)
+#the model can't run the interaction between year collected and latitude, probably because there are too many degrees of freedom
+```
 
-#test if lat and ci are colinear 
+## Model Selection
+
+```{r gamaff_model_selection}
+AIC(gamaff_model)
+AIC(gamaff_model2)
+AIC(gamaff_model3)
+AIC(gamaff_model4)
+#models 2 and 3 are both "best" fits (difference is not significant)
 ```
 
 ## Plotting Models
-```{r}
-gamaff_pred <- ggpredict(gamaff_model2, c("year_fish_collected"))
+```{r gamaff_plot}
+gamaff_pred <- ggpredict(gamaff_model2, c("year_fish_collected", "ci"))
 
 plot(gamaff_pred, show_data = TRUE, dot_alpha = 1) + 
   labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
@@ -243,9 +303,4 @@ plot(gamaff_pred, show_data = TRUE, dot_alpha = 1) +
         axis.line=element_line())
 ```
 
-## Testing Connor Models
-
-```{r}
-
-```
 
