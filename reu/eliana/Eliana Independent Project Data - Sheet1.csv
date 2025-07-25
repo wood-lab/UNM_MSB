@@ -1,0 +1,26 @@
+CatalogNumber,Individual_ID,Fish_Species,Year_Fish_Collected,month_fish_collected,day_fish_collected,Total_Length_mm,Standard_Length_mm,Weight_mg
+MSB:Fish:1078,MSB 1078-A,Gambusia affinis,1939,1,30,29,23,244
+MSB:Fish:1078,MSB 1078-B,Gambusia affinis,1939,1,30,27,22,209
+MSB:Fish:1078,MSB 1078-C,Gambusia affinis,1939,1,30,28,23,222
+MSB:Fish:1078,MSB 1078-D,Gambusia affinis,1939,1,30,25,20,189
+MSB:Fish:1078,MSB 1078-E,Gambusia affinis,1939,1,30,29,23,278
+MSB:Fish:4418,MSB 4418-A,Gambusia affinis,1978,8,3,26,22,263
+MSB:Fish:4418,MSB 4418-B,Gambusia affinis,1978,8,3,33,26,587
+MSB:Fish:7208,MSB 7208-A,Gambusia affinis,1989,11,4,29,23,257
+MSB:Fish:7208,MSB 7208-B,Gambusia affinis,1989,11,4,25,19,170
+MSB:Fish:4389,MSB 4389-A,Gambusia affinis,1978,9,5,32,25,387
+MSB:Fish:4389,MSB 4389-B,Gambusia affinis,1978,9,5,31,24,291
+MSB:Fish:285,MSB 285-A,Gambusia affinis,1961,2,17,27,23,284
+MSB:Fish:9465,MSB 9465-A,Gambusia affinis,1989,2,26,31,26,350
+MSB:Fish:9465,MSB 9465-B,Gambusia affinis,1989,2,26,34,29,400
+MSB:Fish:9465,MSB 9465-C,Gambusia affinis,1989,2,26,32,26,361
+MSB:Fish:4378,MSB 4378-A,Gambusia affinis,1978,9,23,28,23,227
+MSB:Fish:4440,MSB 4440-A,Gambusia affinis,1978,9,5,34,28,363
+MSB:Fish:1089,MSB 1089-A,Gambusia affinis,1939,1,24,32,27,351
+MSB:Fish:1089,MSB 1089-B,Gambusia affinis,1939,1,24,31,24,346
+MSB:Fish:1089,MSB 1089-C,Gambusia affinis,1939,1,24,24,19,146
+MSB:Fish:6300,MSB 6300-A,Gambusia affinis,1988,11,12,30,26,355
+MSB:Fish:6300,MSB 6300-B,Gambusia affinis,1988,11,12,28,22,223
+MSB:Fish:6300,MSB 6300-C,Gambusia affinis,1988,11,12,26,21,203
+MSB:Fish:6300,MSB 6300-D,Gambusia affinis,1988,11,12,27,22,203
+MSB:Fish:6300,MSB 6300-E,Gambusia affinis,1988,11,12,31,24,286
