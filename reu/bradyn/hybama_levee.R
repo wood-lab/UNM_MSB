@@ -104,7 +104,7 @@ before_ab_amrg_elevee <- ab_amrg_elevee %>%
     YearCollected<1951 ~"before",
     TRUE ~ "no_intervention"
   ))
-#BACI_levee
+#BACI_levee Corrales
 BACI_levee<-before_ab_amrg_elevee
 BACI_levee<-BACI_levee %>% 
   filter(
@@ -120,6 +120,22 @@ BACI_levee$before_after_corrales<-factor(BACI_levee$before_after_corrales,levels
 
 BACI_levee$corrales_locale<-factor(BACI_levee$corrales_locale,levels=
                                            c("above","within","below")
+)
+#BACI_levee East Levee
+BACI_levee<-BACI_levee %>% 
+  filter(
+    !e_amrg_locale%in%c("no_intervention")
+  ) %>% 
+  filter(
+    !before_after_eamrg%in%c("no_intervention")
+  )
+
+BACI_levee$before_after_eamrg<-factor(BACI_levee$before_after_eamrg,levels=
+                                           c("before","during","after")
+)
+
+BACI_levee$e_amrg_locale<-factor(BACI_levee$e_amrg_locale,levels=
+                                     c("above","within","below")
 )
 
 #Summing parasite counts
@@ -148,12 +164,14 @@ cochiti_filter <- BACI_levee %>%
   filter(dam_locale %in% c("cochiti_bound"))
 view(cochiti_filter)
 xtabs(~ dam_locale + dam_CI, data = cochiti_filter)
-
+#corrales_model
 model<-glmmTMB(
-  parasite_sum~ corrales_locale*before_after_corrales,
+  parasite_sum~ corrales_locale*before_after_corrales+Weight_mg+(1|CatalogNumber),
   family = nbinom2(),
-  data= BACI_levee 
+  data= BACI_levee, 
+  ziformula = ~1
   )
+
 summary<- BACI_levee %>% 
   group_by(corrales_locale,before_after_corrales) %>% 
   summarize(total=n())
@@ -161,14 +179,26 @@ summary<- BACI_levee %>%
 view(BACI_levee)
 
 model$sdr$pdHess
-
+#corrales model plot
+plot_1<-ggpredict()
+#Alb. Middle Rio Grande East Levee Model
+E_model<-glmmTMB(
+  parasite_sum~e_amrg_locale*before_after_eamrg,
+  family=nbinom2(),
+  data=BACI_levee
+)
+E_summary<- BACI_levee %>% 
+  group_by(e_amrg_locale,before_after_eamrg) %>% 
+  summarize(total=n())
 # here are all the model diagnostics and outputs:
-simulateResiduals(fittedModel = model, plot = TRUE) # if the model was a good fit, the QQ plot would have points hugging the red line, and the carPred plot on the right would be just a scattering of random points -- so this model is a bad fit 
+simulationOutput<-simulateResiduals(fittedModel = model, plot = TRUE) 
+testZeroInflation(simulationOutput)
+# if the model was a good fit, the QQ plot would have points hugging the red line, and the carPred plot on the right would be just a scattering of random points -- so this model is a bad fit 
 summary(model) # the NAs mean it is rank deficient -- there arent enough observations in those categories to draw comparisons (which is to be expected bc we are only working with one species, very few fish)
 plot(parameters(model)) # if the bars do NOT pass over 0 it is a significant result (red is neg, blue is positive) -- just for visualization
 
 # the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
-emm <- emmeans(model, ~ dam_locale*dam_CI)
+emm <- emmeans(model, ~ corrales_locale*before_after_corrales)
 joint_tests(model) # idk what to make of this output at the moment
 
 
