@@ -78,8 +78,8 @@ We're interested in seeing if there is a relationship between year collected and
 #feel free to play around with color (you can enter hex codes for specific values)
 ggplot(data=hybama_data, aes(year_collected,total_length_mm, color=ci)) + 
   geom_point() +
-  scale_color_manual(values = c("control" = "blue", 
-                                "impact" = "red")) +
+  scale_color_manual(values = c("control" = "#76A973", 
+                                "impact" = "#825F87")) +
   theme_bw() +
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
@@ -117,8 +117,8 @@ hybama_pred <- ggpredict(hybama_model1, c("year_collected", "ci"))
 
 plot(hybama_pred, show_data = TRUE, dot_alpha = 1) + 
   labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
-    scale_color_manual(values = c("control" = "blue", 
-                                "impact" = "red")) +
+    scale_color_manual(values = c("control" = "#76A973", 
+                                "impact" = "#825F87")) +
   theme_bw() +
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
@@ -267,8 +267,8 @@ View(gamaff_random)
 ```{r gamaff_explore}
 ggplot(data=gamaff_random, aes(year_fish_collected,total_length_mm, color=ci)) + 
   geom_point() +
-  scale_color_manual(values = c("control" = "blue", 
-                                "impact" = "red")) +
+  scale_color_manual(values = c("control" = "#76A973", 
+                                "impact" = "#825F87")) +
   theme_bw() +
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
@@ -311,8 +311,8 @@ gamaff_pred <- ggpredict(gamaff_model2, c("year_fish_collected", "ci"))
 
 plot(gamaff_pred, show_data = TRUE, dot_alpha = 1) + 
   labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
-    scale_color_manual(values = c("control" = "blue", 
-                                "impact" = "red")) +
+    scale_color_manual(values = c("control" = "#76A973", 
+                                "impact" = "#825F87")) +
   theme_bw() +
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
