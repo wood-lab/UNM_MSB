@@ -119,6 +119,8 @@ plot(hybama_pred, show_data = TRUE, dot_alpha = 1) +
   labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
     scale_color_manual(values = c("control" = "#76A973", 
                                 "impact" = "#825F87")) +
+    scale_fill_manual(values = c("control" = "#76A973", 
+                                "impact" = "#825F87")) +
   theme_bw() +
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
@@ -312,6 +314,8 @@ gamaff_pred <- ggpredict(gamaff_model2, c("year_fish_collected", "ci"))
 plot(gamaff_pred, show_data = TRUE, dot_alpha = 1) + 
   labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
     scale_color_manual(values = c("control" = "#76A973", 
+                                "impact" = "#825F87")) +
+    scale_fill_manual(values = c("control" = "#76A973", 
                                 "impact" = "#825F87")) +
   theme_bw() +
   theme(panel.grid.major=element_blank(),
