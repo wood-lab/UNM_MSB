@@ -35,7 +35,7 @@ View(gam_aff_data)
 tally_up <- hyb_ama_data %>%
   group_by(combo) %>% 
   summarize(n = n())
-tally_up()
+tally_up
 
 hyb_ama_data %>% group_by(combo) %>% summarize(n = n())
 
@@ -47,7 +47,7 @@ gam_aff_data %>% group_by(combo) %>% summarize(n = n())
 # we need to prune out.
 
 levels(as.factor(hyb_ama_data$psite_spp))
-levels(as.factor(gam_aff_data$pstite.spp))
+levels(as.factor(gam_aff_data$psite_spp))
 
 
 # Looks like we want trem.diplo, trem.dlum, and trem.em. Let's trim the dataset so that it includes only those taxa.
@@ -76,6 +76,8 @@ diplo_plus_birds <- merge(diplo_data, bird_data, by.x = "YearCollected", by.y = 
 head(diplo_plus_birds)
 view(diplo_plus_birds)
 
+bird_data <- merge(diplo_data, bird_data, by.x = "YearCollected", by.y = "Year", all.x = TRUE)
+
 
 ### PRELIMINARY ANALYSIS - CHELSEA, 21 JULY 2025
 
@@ -84,3 +86,9 @@ plot(diplo_plus_birds$diplo~diplo_plus_birds$Sum.of.Number.Party.Hours)
 model_1<-glm.nb(diplo~Sum.of.Number.Party.Hours+
                     offset(log(TotalLength_mm)),data=diplo_plus_birds)
 summary(model_1)
+
+plot(diplo_plus_birds$diplo~diplo_plus_birds$Sum.of.Number.Party.Hours)
+
+plot(diplo_plus_birds$diplo~diplo_plus_birds$YearCollected)
+plot(diplo_plus_birds$Sum.of.Number.Party.Hours~diplo_plus_birds$YearCollected)
+
