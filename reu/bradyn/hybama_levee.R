@@ -7,6 +7,8 @@ library(glmmTMB)
 library(parameters)
 library(DHARMa)
 library(emmeans)
+install.packages("ggeffects")
+library(ggeffects)
 
 HYBAMA_data<- read_csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv", 
                        col_types = cols(Sex = col_character()))
@@ -16,7 +18,7 @@ HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
 GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_human_readable_2025.07.21.csv")
 two_fish_data<- bind_rows(HYBAMA_data,GAMAFF_data)
 view(two_fish_data)
-levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
+levee_data<- read.csv("reu/bradyn/al_midrio_R_data.csv")
 #Setting Cochiti dam bounds and dates
 cochiti_dam<-two_fish_data %>% 
   mutate(dam_locale = case_when(
@@ -166,12 +168,29 @@ view(cochiti_filter)
 xtabs(~ dam_locale + dam_CI, data = cochiti_filter)
 #corrales_model
 model<-glmmTMB(
-  parasite_sum~ corrales_locale*before_after_corrales+Weight_mg+(1|CatalogNumber),
+  parasite_sum~ corrales_locale*before_after_corrales,
   family = nbinom2(),
   data= BACI_levee, 
   ziformula = ~1
   )
+#corrales model plot
+names(BACI_levee)
+predict_1 <- ggpredict(
+  model,
+  terms = c("corrales_locale", "before_after_corrales"),
+  type = "zero_inflated",
+)
+predict_plot<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                width = 0.05,
+                position = position_dodge(width = 0.5)) +
+  geom_line(color = "steelblue") +
+  geom_point(size = 5, pch=21, 
+             position=position_dodge(width=0.5),
+             fill = "white", color = "steelblue") +
+  labs(x = "Before/After Corrales", y = "Predicted Parasite Sum")
 
+  
 summary<- BACI_levee %>% 
   group_by(corrales_locale,before_after_corrales) %>% 
   summarize(total=n())
@@ -180,7 +199,7 @@ view(BACI_levee)
 
 model$sdr$pdHess
 #corrales model plot
-plot_1<-ggpredict()
+
 #Alb. Middle Rio Grande East Levee Model
 E_model<-glmmTMB(
   parasite_sum~e_amrg_locale*before_after_eamrg,
