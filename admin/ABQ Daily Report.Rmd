@@ -220,7 +220,7 @@ Replace HYBAMA MSB:Fish:30401 (too few fish in the jar) -- impact_1991to2000 rep
 # GAMAFF
 Download latest file 
 ```{r}
-gam_aff_today<-read.csv(here("data", "GAMAFF Dataset_2025.07.17.csv"))
+gam_aff_today<-read.csv(here("data", "GAMAFF Dataset_2025.07.21.csv"))
                         
 length(gam_aff_today$CatalogNumber)
 ```
