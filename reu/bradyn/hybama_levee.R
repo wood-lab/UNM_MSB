@@ -302,7 +302,6 @@ S_summary<- BACI_levee %>%
   summarize(total=n())
 # here are all the model diagnostics and outputs:
 simulationOutput<-simulateResiduals(fittedModel = S_model, plot = TRUE)
-testOutliers(simulationOutput, type = "bootstrap", nBoot = 1000)
 testZeroInflation(simulationOutput)
 # if the model was a good fit, the QQ plot would have points hugging the red line, and the carPred plot on the right would be just a scattering of random points -- so this model is a bad fit 
 summary(S_model) # the NAs mean it is rank deficient -- there arent enough observations in those categories to draw comparisons (which is to be expected bc we are only working with one species, very few fish)
