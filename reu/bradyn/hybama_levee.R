@@ -7,7 +7,6 @@ library(glmmTMB)
 library(parameters)
 library(DHARMa)
 library(emmeans)
-install.packages("ggeffects")
 library(ggeffects)
 
 HYBAMA_data<- read_csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv", 
@@ -34,10 +33,6 @@ BACI_dam<-cochiti_dam %>%
   ))
 view(BACI_dam)
 #setting Corrales Levee bounds
-# connor load datasets 
-HYBAMA_data<- read.csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv")
-levee_data<- read.csv("C:/Users/Bradyn/OneDrive/GEO366/al_midrio_R_data.csv")
-
 ab_corrales_levee <- BACI_dam %>% 
   mutate(corrales_locale = case_when(
     Latitude > 35.28136319711 ~"above",
@@ -97,7 +92,6 @@ ab_amrg_elevee<-before_ab_sandoval_levee %>%
     Latitude < 35.00309478973807 ~ "below",
     TRUE ~ "no_intervention"
   ))
-view(ab_amrg_elevee)
 #Setting Alb. Middle Rio Grande East Levee System One and Two construction dates
 before_ab_amrg_elevee <- ab_amrg_elevee %>% 
   mutate(before_after_eamrg=case_when(
@@ -143,24 +137,11 @@ BACI_levee$e_amrg_locale<-factor(BACI_levee$e_amrg_locale,levels=
 #Summing parasite counts
 BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge","crus.d","crus.lersp","mono.salsp","mono.ss","trem.dips","trem.iz","trem.unk","nem.larv","nem.l","nem.myst","acanth.spk","cest.botsp","myxo.myxid","myxo.g")], na.rm=TRUE)
 
-#Filter for above Corrales
-above_corrales_levee<-BACI_levee[tolower(BACI_levee$corrales_locale)=="above",]
-
-#filter for above and before corrales
-above_corrales_blevee<-above_corrales_levee[tolower(above_corrales_levee$before_after_corrales)=="before",]
-
-
-#filter for above and after corrales
-above_corrales_alevee<-above_corrales_levee[tolower(above_corrales_levee$before_after_corrales)=="after",]
 
 # instead of looking at sums of counts we want to see the average occurance at each setting (see code below)
-view(BACI_levee)
 averages <- BACI_levee %>% 
   group_by(dam_locale,dam_CI) %>% 
   summarize(avg.bin= mean(parasite_sum))
-view(averages)
-str(averages)
-
 #Attempting to model data IGNORE ALL I HAVE NO IDEA WHAT IM DOING
 cochiti_filter <- BACI_levee %>%
   filter(dam_locale %in% c("cochiti_bound"))
@@ -174,7 +155,6 @@ model<-glmmTMB(
   ziformula = ~1
   )
 #corrales model plot
-names(BACI_levee)
 predict_1 <- ggpredict(
   model,
   terms = c("corrales_locale", "before_after_corrales"),
@@ -190,25 +170,32 @@ predict_plot<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group))
              fill = "white", color = "steelblue") +
   labs(x = "Before/After Corrales", y = "Predicted Parasite Sum")
 
-  
-summary<- BACI_levee %>% 
-  group_by(corrales_locale,before_after_corrales) %>% 
-  summarize(total=n())
-
-view(BACI_levee)
-
-model$sdr$pdHess
-#corrales model plot
-
 #Alb. Middle Rio Grande East Levee Model
 E_model<-glmmTMB(
   parasite_sum~e_amrg_locale*before_after_eamrg,
   family=nbinom2(),
-  data=BACI_levee
+  data=BACI_levee,
+  ziformula = ~1
 )
 E_summary<- BACI_levee %>% 
   group_by(e_amrg_locale,before_after_eamrg) %>% 
   summarize(total=n())
+#Alb. Middle Rio Grande East Levee Model
+predict_2 <- ggpredict(
+  E_model,
+  terms = c("e_amrg_locale", "before_after_eamrg"),
+  type = "zero_inflated",
+)
+predict_plot2<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                width = 0.05,
+                position = position_dodge(width = 0.5)) +
+  geom_line(color = "steelblue") +
+  geom_point(size = 5, pch=21, 
+             position=position_dodge(width=0.5),
+             fill = "white", color = "steelblue") +
+  labs(x = "Before/After East MRG", y = "Predicted Parasite Sum")
+
 # here are all the model diagnostics and outputs:
 simulationOutput<-simulateResiduals(fittedModel = model, plot = TRUE) 
 testZeroInflation(simulationOutput)
