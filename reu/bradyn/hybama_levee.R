@@ -31,7 +31,6 @@ BACI_dam<-cochiti_dam %>%
     YearCollected<1975~"control",
     TRUE~"no_intervention"
   ))
-view(BACI_dam)
 #setting Corrales Levee bounds
 ab_corrales_levee <- BACI_dam %>% 
   mutate(corrales_locale = case_when(
@@ -79,9 +78,8 @@ ab_sandoval_levee<-few_levee %>%
 #Setting Sandoval Levee construction dates
 before_ab_sandoval_levee<-ab_sandoval_levee %>% 
   mutate(before_after_sandoval=case_when(
-    YearCollected>=1935~"after",
-    YearCollected>=1930 & YearCollected <1935 ~"during",
-    YearCollected<1930 ~"before",
+    YearCollected>=1975~"after",
+    YearCollected<1975 ~"before",
     TRUE ~ "no_intervention"
   ))
 #Setting Alb. Middle Rio Grande East Levee System One and Two bounds
@@ -100,6 +98,7 @@ before_ab_amrg_elevee <- ab_amrg_elevee %>%
     YearCollected<1951 ~"before",
     TRUE ~ "no_intervention"
   ))
+
 #BACI_levee Corrales
 BACI_levee<-before_ab_amrg_elevee
 BACI_levee<-BACI_levee %>% 
@@ -133,7 +132,52 @@ BACI_levee$before_after_eamrg<-factor(BACI_levee$before_after_eamrg,levels=
 BACI_levee$e_amrg_locale<-factor(BACI_levee$e_amrg_locale,levels=
                                      c("above","within","below")
 )
+#BACI_levee West Levee
+BACI_levee<-BACI_levee %>% 
+  filter(
+    !w_amrg_locale%in%c("no_intervention")
+  ) %>% 
+  filter(
+    !before_after_wamrg%in%c("no_intervention")
+  )
 
+BACI_levee$before_after_wamrg<-factor(BACI_levee$before_after_wamrg, levels=
+                                        c("before","during","after")
+)
+BACI_levee$w_amrg_locale<-factor(BACI_levee$w_amrg_locale,levels=
+                                   c("above","within","below")
+)
+#BACI_levee Sandoval Levee
+BACI_levee<-BACI_levee %>% 
+  filter(
+    !sandoval_locale%in%c("no_intervention")
+  ) %>% 
+  filter(
+    !before_after_sandoval%in%c("no_intervention")
+  )
+
+BACI_levee$before_after_sandoval<-factor(BACI_levee$before_after_sandoval,levels=
+                                           c("before","after")
+)
+
+BACI_levee$sandoval_locale<-factor(BACI_levee$sandoval_locale,levels=
+                                     c("above","within","below")
+)
+#BACI_Cochiti
+BACI_levee<-BACI_levee %>% 
+  filter(
+    !dam_locale%in%c("no_intervention")
+  ) %>% 
+  filter(
+    !dam_CI%in%c("no_intervention")
+  )
+BACI_levee$dam_CI<-factor(BACI_levee$dam_CI,levels=
+                                           c("control","impact")
+)
+
+BACI_levee$dam_locale<-factor(BACI_levee$sandoval_locale,levels=
+                                     c("cochiti_bound")
+)
 #Summing parasite counts
 BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge","crus.d","crus.lersp","mono.salsp","mono.ss","trem.dips","trem.iz","trem.unk","nem.larv","nem.l","nem.myst","acanth.spk","cest.botsp","myxo.myxid","myxo.g")], na.rm=TRUE)
 
@@ -184,7 +228,7 @@ E_summary<- BACI_levee %>%
 predict_2 <- ggpredict(
   E_model,
   terms = c("e_amrg_locale", "before_after_eamrg"),
-  type = "zero_inflated",
+  type = "zero_inflated"
 )
 predict_plot2<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
@@ -195,13 +239,74 @@ predict_plot2<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)
              position=position_dodge(width=0.5),
              fill = "white", color = "steelblue") +
   labs(x = "Before/After East MRG", y = "Predicted Parasite Sum")
+#Alb. Middle Rio Grande West levee model
+W_model<-glmmTMB(
+  parasite_sum~w_amrg_locale*before_after_wamrg,
+  family=nbinom2(),
+  data=BACI_levee,
+  ziformula=~1
+)
+W_summary<- BACI_levee %>% 
+  group_by(w_amrg_locale,before_after_wamrg) %>% 
+  summarize(total=n())
+view(BACI_levee)
+#Alb. Middle Rio Grande West levee plot
+predict_3 <- ggpredict(
+  W_model,
+  terms = c("w_amrg_locale", "before_after_wamrg"),
+)
 
+predict_plot3<-ggplot(data = predict_3, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                width = 0.05,
+                position = position_dodge(width = 0.5)) +
+  geom_line(color = "steelblue") +
+  geom_point(size = 5, pch=21, 
+             position=position_dodge(width=0.5),
+             fill = "white", color = "steelblue") +
+  labs(x = "Before/After West MRG", y = "Predicted Parasite Sum")
+#Sandoval Model
+S_model<-glmmTMB(
+  parasite_sum~ sandoval_locale*before_after_sandoval+(1|CatalogNumber),
+  family = nbinom2(),
+  data= BACI_levee, 
+  ziformula = ~1
+)
+S_summary<- BACI_levee %>% 
+  group_by(sandoval_locale,before_after_sandoval) %>% 
+  summarize(total=n())
+#Sandoval Plot
+predict_4 <- ggpredict(
+  S_model,
+  terms = c("sandoval_locale", "before_after_sandoval"),
+)
+
+predict_plot4<-ggplot(data = predict_4, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                width = 0.05,
+                position = position_dodge(width = 0.5)) +
+  geom_line(color = "steelblue") +
+  geom_point(size = 5, pch=21, 
+             position=position_dodge(width=0.5),
+             fill = "white", color = "steelblue") +
+  labs(x = "Before/After Sandoval Renovation", y = "Predicted Parasite Sum")
+#Cochiti model
+C_model<-glmmTMB(
+  parasite_sum~ dam_locale*dam_CI,
+  family = nbinom2(),
+  data= BACI_levee, 
+  ziformula = ~1
+)
+S_summary<- BACI_levee %>% 
+  group_by(sandoval_locale,before_after_sandoval) %>% 
+  summarize(total=n())
 # here are all the model diagnostics and outputs:
-simulationOutput<-simulateResiduals(fittedModel = model, plot = TRUE) 
+simulationOutput<-simulateResiduals(fittedModel = S_model, plot = TRUE)
+testOutliers(simulationOutput, type = "bootstrap", nBoot = 1000)
 testZeroInflation(simulationOutput)
 # if the model was a good fit, the QQ plot would have points hugging the red line, and the carPred plot on the right would be just a scattering of random points -- so this model is a bad fit 
-summary(model) # the NAs mean it is rank deficient -- there arent enough observations in those categories to draw comparisons (which is to be expected bc we are only working with one species, very few fish)
-plot(parameters(model)) # if the bars do NOT pass over 0 it is a significant result (red is neg, blue is positive) -- just for visualization
+summary(S_model) # the NAs mean it is rank deficient -- there arent enough observations in those categories to draw comparisons (which is to be expected bc we are only working with one species, very few fish)
+plot(parameters(S_model)) # if the bars do NOT pass over 0 it is a significant result (red is neg, blue is positive) -- just for visualization
 
 # the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
 emm <- emmeans(model, ~ corrales_locale*before_after_corrales)
