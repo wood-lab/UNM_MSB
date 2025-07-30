@@ -162,7 +162,7 @@ q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),psite_count))+
   geom_point(aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
-  xlab("year collected")+
+  xlab("bird abundance (number of birds per party-hour)")+
   ylab("parasite abundance (number of parasite individuals per host individual)")+
   theme_minimal()+
   theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),
