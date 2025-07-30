@@ -15,11 +15,12 @@ HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
                   ifelse(HYBAMA_data$Sex == FALSE, "F", NA))
 
 GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_human_readable_2025.07.21.csv")
-two_fish_data<- bind_rows(HYBAMA_data,GAMAFF_data)
-view(two_fish_data)
+PIMPRO_data<- read_csv("data/PIMPRO Data_2025.07.28.csv")
+fish_data<- bind_rows(HYBAMA_data,GAMAFF_data,PIMPRO_data)
+view(fish_data)
 levee_data<- read.csv("reu/bradyn/al_midrio_R_data.csv")
 #Setting Cochiti dam bounds and dates
-cochiti_dam<-two_fish_data %>% 
+cochiti_dam<-fish_data %>% 
   mutate(dam_locale = case_when(
     Latitude >= 35.2 & Latitude <=35.6481 ~"cochiti_bound",
     TRUE ~ "no_intervention"
@@ -72,14 +73,15 @@ ab_sandoval_levee<-few_levee %>%
   mutate(sandoval_locale = case_when(
     Latitude > 35.376442340109 ~"above",
     Latitude>= 35.2268848801106 & Latitude <= 35.376442340109 ~ "within",
-    Latitude < 35.2268848801106 ~"below",
+    Latitude < 35.2268848801106 & Latitude>=35.2 ~"below",
     TRUE ~ "no_intervention"
   ))
 #Setting Sandoval Levee construction dates
 before_ab_sandoval_levee<-ab_sandoval_levee %>% 
   mutate(before_after_sandoval=case_when(
     YearCollected>=1975~"after",
-    YearCollected<1975 ~"before",
+    YearCollected>=1965 & YearCollected<1975~"during",
+    YearCollected<1965 ~"before",
     TRUE ~ "no_intervention"
   ))
 #Setting Alb. Middle Rio Grande East Levee System One and Two bounds
@@ -157,26 +159,11 @@ BACI_levee<-BACI_levee %>%
   )
 
 BACI_levee$before_after_sandoval<-factor(BACI_levee$before_after_sandoval,levels=
-                                           c("before","after")
+                                           c("before","during","after")
 )
 
 BACI_levee$sandoval_locale<-factor(BACI_levee$sandoval_locale,levels=
                                      c("above","within","below")
-)
-#BACI_Cochiti
-BACI_levee<-BACI_levee %>% 
-  filter(
-    !dam_locale%in%c("no_intervention")
-  ) %>% 
-  filter(
-    !dam_CI%in%c("no_intervention")
-  )
-BACI_levee$dam_CI<-factor(BACI_levee$dam_CI,levels=
-                                           c("control","impact")
-)
-
-BACI_levee$dam_locale<-factor(BACI_levee$sandoval_locale,levels=
-                                     c("cochiti_bound")
 )
 #Summing parasite counts
 BACI_levee$parasite_sum <- rowSums(BACI_levee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge","crus.d","crus.lersp","mono.salsp","mono.ss","trem.dips","trem.iz","trem.unk","nem.larv","nem.l","nem.myst","acanth.spk","cest.botsp","myxo.myxid","myxo.g")], na.rm=TRUE)
@@ -195,14 +182,19 @@ xtabs(~ dam_locale + dam_CI, data = cochiti_filter)
 model<-glmmTMB(
   parasite_sum~ corrales_locale*before_after_corrales,
   family = nbinom2(),
-  data= BACI_levee, 
-  ziformula = ~1
+  data= BACI_levee,
   )
+summary<- BACI_levee %>% 
+  group_by(corrales_locale,before_after_corrales) %>% 
+  summarize(total=n())
+
+cmodelOutput<-simulateResiduals(fittedModel = model, plot = TRUE)
+summary(model)
+plot(parameters(model))
 #corrales model plot
 predict_1 <- ggpredict(
   model,
   terms = c("corrales_locale", "before_after_corrales"),
-  type = "zero_inflated",
 )
 predict_plot<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
@@ -219,16 +211,18 @@ E_model<-glmmTMB(
   parasite_sum~e_amrg_locale*before_after_eamrg,
   family=nbinom2(),
   data=BACI_levee,
-  ziformula = ~1
+  ziformula=~1
 )
 E_summary<- BACI_levee %>% 
   group_by(e_amrg_locale,before_after_eamrg) %>% 
   summarize(total=n())
+emodelOutput<-simulateResiduals(fittedModel = E_model, plot = TRUE)
+summary(E_model)
+plot(parameters(E_model))
 #Alb. Middle Rio Grande East Levee Model
 predict_2 <- ggpredict(
   E_model,
   terms = c("e_amrg_locale", "before_after_eamrg"),
-  type = "zero_inflated"
 )
 predict_plot2<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
@@ -240,8 +234,9 @@ predict_plot2<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)
              fill = "white", color = "steelblue") +
   labs(x = "Before/After East MRG", y = "Predicted Parasite Sum")
 #Alb. Middle Rio Grande West levee model
+
 W_model<-glmmTMB(
-  parasite_sum~w_amrg_locale*before_after_wamrg,
+  parasite_sum~w_amrg_locale*before_after_wamrg+(1|YearCollected),
   family=nbinom2(),
   data=BACI_levee,
   ziformula=~1
@@ -249,11 +244,15 @@ W_model<-glmmTMB(
 W_summary<- BACI_levee %>% 
   group_by(w_amrg_locale,before_after_wamrg) %>% 
   summarize(total=n())
-view(BACI_levee)
+
+wmodelOutput<-simulateResiduals(fittedModel = W_model, plot = TRUE)
+summary(W_model)
+plot(parameters(W_model))
 #Alb. Middle Rio Grande West levee plot
 predict_3 <- ggpredict(
   W_model,
   terms = c("w_amrg_locale", "before_after_wamrg"),
+  bias_correction = TRUE
 )
 
 predict_plot3<-ggplot(data = predict_3, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
@@ -275,6 +274,10 @@ S_model<-glmmTMB(
 S_summary<- BACI_levee %>% 
   group_by(sandoval_locale,before_after_sandoval) %>% 
   summarize(total=n())
+
+smodelOutput<-simulateResiduals(fittedModel = S_model, plot = TRUE)
+summary(S_model)
+plot(parameters(S_model))
 #Sandoval Plot
 predict_4 <- ggpredict(
   S_model,
