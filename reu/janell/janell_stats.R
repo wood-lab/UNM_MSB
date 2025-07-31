@@ -97,13 +97,42 @@ all_data <- rbind(hybama_plus_birds,gamaff_plus_birds)
 view(all_data)
 
 
-### PRELIMINARY ANALYSIS - CHELSEA, updated 27 JULY 2025
+### PRELIMINARY ANALYSIS - CHELSEA, updated 31 JULY 2025
 
 plot(all_data$psite_count~all_data$Sum.of.Number.Party.Hours)
 
 model_1<-glmer.nb(psite_count~Sum.of.Number.Party.Hours+
                     offset(log(TotalLength_mm))+(1|fish_spp/psite_spp),data=all_data)
 summary(model_1)
+
+predictions_1<-ggpredict(model_1,c("Sum.of.Number.Party.Hours"))
+
+predicted_df_1 <- data.frame(Sum.of.Number.Party.Hours = predictions_1$x, psite_count=predictions_1$predicted,
+                           conf.low = predictions_1$conf.low, conf.high = predictions_1$conf.high)
+
+
+model_2<-glmer.nb(psite_count~Sum.of.Number.Party.Hours+YearCollected+
+                    offset(log(TotalLength_mm))+(1|fish_spp/psite_spp),data=all_data)
+summary(model_2)
+
+predictions_2<-ggpredict(model_2,c("YearCollected"))
+
+str(predictions_2)
+
+predicted_df_2 <- data.frame(YearCollected = predictions_2$x, psite_count=predictions_2$predicted,
+                           conf.low = predictions_2$conf.low, conf.high = predictions_2$conf.high)
+
+
+model_3<-glm(Sum.of.Number.Party.Hours~+YearCollected,data=all_data)
+summary(model_3)
+
+predictions_3<-ggpredict(model_3,c("YearCollected"))
+
+str(predictions_3)
+
+predicted_df_3 <- data.frame(YearCollected = predictions_3$x, Sum.of.Number.Party.Hours=predictions_3$predicted,
+                             conf.low = predictions_3$conf.low, conf.high = predictions_3$conf.high)
+
 
 plot(all_data$psite_count~all_data$Sum.of.Number.Party.Hours)
 plot(all_data$psite_count~all_data$YearCollected)
@@ -117,6 +146,8 @@ plot(all_data$Sum.of.Number.Party.Hours~all_data$YearCollected)
 
 q1_plot<-ggplot(all_data,aes(YearCollected,Sum.of.Number.Party.Hours))+
   geom_point(size=4,pch=19)+
+  geom_line(data=predicted_df_3,mapping=aes(x=YearCollected,Sum.of.Number.Party.Hours))+
+  geom_ribbon(data=predicted_df_3,mapping=aes(x=YearCollected,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   xlab("year collected")+
   ylab("bird abundance (number of birds per party-hour)")+
   theme_minimal()+
@@ -140,6 +171,8 @@ pal<-viridis(n=4)
 
 q2_plot<-ggplot(all_data,aes(jitter(YearCollected,5),psite_count))+
   geom_point(aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
+  geom_line(data=predicted_df_2,mapping=aes(x=YearCollected,psite_count))+
+  geom_ribbon(data=predicted_df_2,mapping=aes(x=YearCollected,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
   xlab("year collected")+
@@ -160,10 +193,12 @@ q2_plot
 # Addressing Question 3: 
 
 q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),psite_count))+
-  geom_point(aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
+  geom_point(data=all_data,aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
+  geom_line(data=predicted_df_1,mapping=aes(x=Sum.of.Number.Party.Hours,psite_count))+
+  geom_ribbon(data=predicted_df_1,mapping=aes(x=Sum.of.Number.Party.Hours,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
-  xlab("year collected")+
+  xlab("bird abundance (number of birds per party-hour)")+
   ylab("parasite abundance (number of parasite individuals per host individual)")+
   theme_minimal()+
   theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),
@@ -176,4 +211,22 @@ q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),psite_count))+
   theme(legend.position="top",legend.title = element_text(size = 18),
         legend.text = element_text(size=14))
 q3_plot
+
+
+q3_prediction_plot<-ggplot(predictions,aes(x,predicted))+
+  geom_line(data=predictions,mapping=aes(x=x,y=predicted))+
+  geom_ribbon(data=predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),alpha=0.1)+
+  xlab("bird abundance (number of birds per party-hour)")+
+  ylab("predicted parasite abundance (number of parasite individuals per host individual)")+
+  theme_minimal()+
+  theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),
+        axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=16),
+        axis.title.x=element_text(size=16),
+        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
+  #annotate("text",label="effect of year:\np < 0.0001",x = 1.9, y = 0.45, size = 6)+
+  theme(legend.position="top",legend.title = element_text(size = 18),
+        legend.text = element_text(size=14))
+q3_prediction_plot
 
