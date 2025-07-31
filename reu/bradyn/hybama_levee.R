@@ -8,7 +8,7 @@ library(parameters)
 library(DHARMa)
 library(emmeans)
 library(ggeffects)
-
+#Loading Datasets
 HYBAMA_data<- read_csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv", 
                        col_types = cols(Sex = col_character()))
 HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
@@ -17,7 +17,6 @@ HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
 GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_human_readable_2025.07.21.csv")
 PIMPRO_data<- read_csv("data/PIMPRO Data_2025.07.28.csv")
 fish_data<- bind_rows(HYBAMA_data,GAMAFF_data,PIMPRO_data)
-view(fish_data)
 levee_data<- read.csv("reu/bradyn/al_midrio_R_data.csv")
 #Setting Cochiti dam bounds and dates
 cochiti_dam<-fish_data %>% 
@@ -106,7 +105,7 @@ before_ab_amrg_elevee$parasite_sum <- rowSums(before_ab_amrg_elevee[, c("cope.le
 #renaming data
 BACI_levee<-before_ab_amrg_elevee
 rename(BACI_levee, sample_id = `...1`)
-view(BACI_levee)
+
 #NEW CORRALES DATA
 corrales_BACI<-BACI_levee
 corrales_BACI<-corrales_BACI %>% 
@@ -159,20 +158,20 @@ summary<- corrales_BACI %>%
 cmodelOutput<-simulateResiduals(fittedModel = model, plot = TRUE)
 summary(model)
 plot(parameters(model))
-view(corrales_BACI)
+
 predict_1 <- ggpredict(
   model,
   terms = c("corrales_locale", "before_after_corrales"),
 )
-predict_plot<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
-                width = 0.05,
-                position = position_dodge(width = 0.5)) +
-  geom_line(color = "steelblue") +
-  geom_point(size = 5, pch=21, 
-             position=position_dodge(width=0.5),
-             fill = "white", color = "steelblue") +
-  labs(x = "Before/After Corrales", y = "Predicted Parasite Sum")
+predict_plot<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group))+
+  facet_wrap(~group)+
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
+  geom_line(color = "#E30B5D") + 
+  geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "#E30B5D", color = "#E30B5D") + 
+  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
+  theme(panel.background = element_blank())
+
+
 #NEW EAST LEVEE DATA
 e_levee_BACI<-BACI_levee
 e_levee_BACI<-e_levee_BACI %>% 
@@ -231,14 +230,13 @@ predict_2 <- ggpredict(
   terms = c("e_amrg_locale", "before_after_eamrg"),
 )
 predict_2<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
-                width = 0.05,
-                position = position_dodge(width = 0.5)) +
-  geom_line(color = "steelblue") +
-  geom_point(size = 5, pch=21, 
-             position=position_dodge(width=0.5),
-             fill = "white", color = "steelblue") +
-  labs(x = "Before/After East Levee", y = "Predicted Parasite Sum")
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
+  geom_line(color = "orange") + 
+  geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "orange", color = "orange") + 
+  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
+  theme(panel.background = element_blank())
+
+
 #NEW WEST LEVEE DATA
 w_levee_BACI<-BACI_levee
 w_levee_BACI<-w_levee_BACI %>% 
@@ -298,14 +296,13 @@ predict_3 <- ggpredict(
   bias_correction = TRUE,
 )
 predict_3<-ggplot(data = predict_3, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
-                width = 0.05,
-                position = position_dodge(width = 0.5)) +
-  geom_line(color = "steelblue") +
-  geom_point(size = 5, pch=21, 
-             position=position_dodge(width=0.5),
-             fill = "white", color = "steelblue") +
-  labs(x = "Before/After West Levee", y = "Predicted Parasite Sum")
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
+  geom_line(color = "orange") + 
+  geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "orange", color = "orange") + 
+  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
+  theme(panel.background = element_blank())
+
+
 #NEW SANDOVAL DATA
 sandoval_BACI<-BACI_levee
 sandoval_BACI<-sandoval_BACI %>% 
@@ -365,14 +362,12 @@ predict_4 <- ggpredict(
   bias_correction = TRUE,
 )
 predict_4<-ggplot(data = predict_4, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
-                width = 0.05,
-                position = position_dodge(width = 0.5)) +
-  geom_line(color = "steelblue") +
-  geom_point(size = 5, pch=21, 
-             position=position_dodge(width=0.5),
-             fill = "white", color = "steelblue") +
-  labs(x = "Before/After Sandoval Levee RENO", y = "Predicted Parasite Sum")
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
+  geom_line(color = "green") + 
+  geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "green", color = "green") + 
+  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
+  theme(panel.background = element_blank())
+
 
 # the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
 emm <- emmeans(S_model, ~ sandoval_locale*before_after_sandoval)
