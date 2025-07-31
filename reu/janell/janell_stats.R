@@ -104,10 +104,34 @@ model_1<-glmer.nb(psite_count~Sum.of.Number.Party.Hours+
                     offset(log(TotalLength_mm))+(1|fish_spp/psite_spp),data=all_data)
 summary(model_1)
 
-predictions<-ggpredict(model_1,c("Sum.of.Number.Party.Hours"))
+predictions_1<-ggpredict(model_1,c("Sum.of.Number.Party.Hours"))
 
-predicted_df <- data.frame(Sum.of.Number.Party.Hours = predictions$x, psite_count=predictions$predicted,
-                           conf.low = predictions$conf.low, conf.high = predictions$conf.high)
+predicted_df_1 <- data.frame(Sum.of.Number.Party.Hours = predictions_1$x, psite_count=predictions_1$predicted,
+                           conf.low = predictions_1$conf.low, conf.high = predictions_1$conf.high)
+
+
+model_2<-glmer.nb(psite_count~Sum.of.Number.Party.Hours+YearCollected+
+                    offset(log(TotalLength_mm))+(1|fish_spp/psite_spp),data=all_data)
+summary(model_2)
+
+predictions_2<-ggpredict(model_2,c("YearCollected"))
+
+str(predictions_2)
+
+predicted_df_2 <- data.frame(YearCollected = predictions_2$x, psite_count=predictions_2$predicted,
+                           conf.low = predictions_2$conf.low, conf.high = predictions_2$conf.high)
+
+
+model_3<-glm(Sum.of.Number.Party.Hours~+YearCollected,data=all_data)
+summary(model_3)
+
+predictions_3<-ggpredict(model_3,c("YearCollected"))
+
+str(predictions_3)
+
+predicted_df_3 <- data.frame(YearCollected = predictions_3$x, Sum.of.Number.Party.Hours=predictions_3$predicted,
+                             conf.low = predictions_3$conf.low, conf.high = predictions_3$conf.high)
+
 
 plot(all_data$psite_count~all_data$Sum.of.Number.Party.Hours)
 plot(all_data$psite_count~all_data$YearCollected)
@@ -121,6 +145,8 @@ plot(all_data$Sum.of.Number.Party.Hours~all_data$YearCollected)
 
 q1_plot<-ggplot(all_data,aes(YearCollected,Sum.of.Number.Party.Hours))+
   geom_point(size=4,pch=19)+
+  geom_line(data=predicted_df_3,mapping=aes(x=YearCollected,Sum.of.Number.Party.Hours))+
+  geom_ribbon(data=predicted_df_3,mapping=aes(x=YearCollected,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   xlab("year collected")+
   ylab("bird abundance (number of birds per party-hour)")+
   theme_minimal()+
@@ -144,6 +170,8 @@ pal<-viridis(n=4)
 
 q2_plot<-ggplot(all_data,aes(jitter(YearCollected,5),psite_count))+
   geom_point(aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
+  geom_line(data=predicted_df_2,mapping=aes(x=YearCollected,psite_count))+
+  geom_ribbon(data=predicted_df_2,mapping=aes(x=YearCollected,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
   xlab("year collected")+
@@ -165,8 +193,8 @@ q2_plot
 
 q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),psite_count))+
   geom_point(data=all_data,aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
-  geom_line(data=predicted_df,mapping=aes(x=Sum.of.Number.Party.Hours,psite_count))+
-  geom_ribbon(data=predicted_df,mapping=aes(x=Sum.of.Number.Party.Hours,ymin=conf.low,ymax=conf.high),alpha=0.5)+
+  geom_line(data=predicted_df_1,mapping=aes(x=Sum.of.Number.Party.Hours,psite_count))+
+  geom_ribbon(data=predicted_df_1,mapping=aes(x=Sum.of.Number.Party.Hours,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
   xlab("bird abundance (number of birds per party-hour)")+
