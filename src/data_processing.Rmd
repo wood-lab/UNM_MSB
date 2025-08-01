@@ -236,7 +236,7 @@ write.csv(hybama_processed_data, file="Hybognathus_amarus_processed_human_readab
 
 Download most recent file
 ```{r gamaff_dataset}
-gamaff_today<-read.csv(here("data", "GAMAFF Dataset_2025.07.21.csv"))
+gamaff_today<-read.csv(here("data", "GAMAFF Dataset_2025.08.01.csv"))
 length(gamaff_today$CatalogNumber)
 ```
 
@@ -283,7 +283,9 @@ crus.d <- gamaff_with_metadata$crus_d_skin + 2*(gamaff_with_metadata$crus_d_gill
 
 crus.lersp <- gamaff_with_metadata$crus_lersp_flush
 
-mono.gyro <- gamaff_with_metadata$mono_gyro_analfin + gamaff_with_metadata$mono_gyro_dorsalfin
+mono.gyrof <- gamaff_with_metadata$mono_gyro_analfin + gamaff_with_metadata$mono_gyro_dorsalfin
+
+mono.gyrog <- gamaff_with_metadata$mono_gyro_gill
 
 mono.salsp <- 2*(gamaff_with_metadata$mono_salsp_gill)
 
@@ -295,11 +297,15 @@ trem.iz <- gamaff_with_metadata$trem_iz_intestine
 
 trem.unk <- gamaff_with_metadata$trem_unk_gill
 
-nem.larv <- gamaff_with_metadata$nem_larv_connectivetissue + gamaff_with_metadata$nem_larv_intestine
+nem.larv <- gamaff_with_metadata$nem_larv_connectivetissue + gamaff_with_metadata$nema_larv_intestine
 
 nem.l <- gamaff_with_metadata$nema_l_connective_tissue
 
 nem.myst <- gamaff_with_metadata$nema_myst_intestine
+
+nem.sc <- gamaff_with_metadata$nema_sc_intestine
+
+nem.unk <- gamaff_with_metadata$nema_unk_intestine
 
 acanth.spk <- gamaff_with_metadata$acanth_spk_flush
 
@@ -308,6 +314,8 @@ cest.botsp <- gamaff_with_metadata$cest_a_intestine + gamaff_with_metadata$cest_
 myxo.myxid <- gamaff_with_metadata$myxo_mxyid_gallbladder_presence1_absence0
 
 myxo.g <- 2*(gamaff_with_metadata$myxo_g_gill)
+
+prot.cil <- gamaff_with_metadata$prot_cil_gill_presence_absence
 ```
 
 Quickly evaluating relationship between total length and weight to check for any potential abnormalities.
@@ -341,7 +349,7 @@ gamaff_processed_data<-cbind.data.frame(
   gamaff_with_metadata$longitude, 
   crus.d, 
   crus.lersp, 
-  mono.gyro, 
+  mono.gyrof,
   mono.salsp, 
   mono.ss,
   trem.dips, 
@@ -349,12 +357,11 @@ gamaff_processed_data<-cbind.data.frame(
   trem.unk, 
   nem.larv, 
   nem.l, 
-  nem.myst, 
+  nem.myst,
   acanth.spk, 
   cest.botsp, 
   myxo.myxid, 
   myxo.g)
-
 ```
 
 
@@ -413,8 +420,8 @@ gamaff_processed_data_longer$Weight_mg <- as.numeric(gamaff_processed_data_longe
 ## Export both sheets
 
 ```{r gamaff_export}
-write.csv(gamaff_processed_data_longer, file= "Gambusia_affinis_processed_machine_readable_2025.07.21.csv")
+write.csv(gamaff_processed_data_longer, file= "Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
 
-write.csv(gamaff_processed_data, file="Gambusia_affinis_processed_human_readable_2025.07.21.csv")
+write.csv(gamaff_processed_data, file="Gambusia_affinis_processed_human_readable_2025.08.01.csv")
 ```
 
