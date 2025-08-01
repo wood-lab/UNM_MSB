@@ -30,7 +30,7 @@ library(MASS)
 
 hyb_ama_data<-read.csv("data/processed/Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
 view(hyb_ama_data)
-gam_aff_data<-read.csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.07.21.csv")
+gam_aff_data<-read.csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
 View(gam_aff_data)
 
 
@@ -100,8 +100,8 @@ view(all_data)
 ### PRELIMINARY ANALYSIS - CHELSEA, updated 31 JULY 2025
 
 plot(all_data$psite_count~all_data$Sum.of.Number.Party.Hours)
-
-model_1<-glmer.nb(psite_count~Sum.of.Number.Party.Hours+
+str(all_data)
+model_1<-glmer.nb(as.numeric(psite_count)~Sum.of.Number.Party.Hours+
                     offset(log(TotalLength_mm))+(1|fish_spp/psite_spp),data=all_data)
 summary(model_1)
 
@@ -111,7 +111,7 @@ predicted_df_1 <- data.frame(Sum.of.Number.Party.Hours = predictions_1$x, psite_
                            conf.low = predictions_1$conf.low, conf.high = predictions_1$conf.high)
 
 
-model_2<-glmer.nb(psite_count~Sum.of.Number.Party.Hours+YearCollected+
+model_2<-glmer.nb(as.numeric(psite_count)~Sum.of.Number.Party.Hours+YearCollected+
                     offset(log(TotalLength_mm))+(1|fish_spp/psite_spp),data=all_data)
 summary(model_2)
 
@@ -121,6 +121,13 @@ str(predictions_2)
 
 predicted_df_2 <- data.frame(YearCollected = predictions_2$x, psite_count=predictions_2$predicted,
                            conf.low = predictions_2$conf.low, conf.high = predictions_2$conf.high)
+
+predictions_4<-ggpredict(model_2,c("Sum.of.Number.Party.Hours"))
+
+str(predictions_4)
+
+predicted_df_4 <- data.frame(Sum.of.Number.Party.Hours = predictions_4$x, psite_count=predictions_4$predicted,
+                             conf.low = predictions_4$conf.low, conf.high = predictions_4$conf.high)
 
 
 model_3<-glm(Sum.of.Number.Party.Hours~YearCollected,data=all_data)
@@ -149,15 +156,16 @@ q1_plot<-ggplot(all_data,aes(YearCollected,Sum.of.Number.Party.Hours))+
   geom_line(data=predicted_df_3,mapping=aes(x=YearCollected,Sum.of.Number.Party.Hours))+
   geom_ribbon(data=predicted_df_3,mapping=aes(x=YearCollected,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   xlab("year collected")+
-  ylab("bird abundance (number of birds per party-hour)")+
+  ylab("bird abundance\n(number of birds per party-hour)")+
   theme_minimal()+
   theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),
-        axis.text.y=element_text(size=14),
-        axis.title.y=element_text(size=16),
-        axis.title.x=element_text(size=16),
+        axis.text.y=element_text(size=25),
+        axis.title.y=element_text(size=30),
+        axis.text.x=element_text(size=25),
+        axis.title.x=element_text(size=30),
         panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
         panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
-  #annotate("text",label="effect of year:\np < 0.0001",x = 1.9, y = 0.45, size = 6)+
+  annotate("text",label="effect of year:\np < 0.0001",x = 1990, y = 20, size = 10)+
   theme(legend.position="top",legend.title = element_text(size = 18),
         legend.text = element_text(size=14))
 q1_plot
@@ -169,22 +177,23 @@ library(viridis)
 plasma_pal <- c(viridis::plasma(n = 4))
 pal<-viridis(n=4)
 
-q2_plot<-ggplot(all_data,aes(jitter(YearCollected,5),psite_count))+
+q2_plot<-ggplot(all_data,aes(jitter(YearCollected,5),as.numeric(psite_count)))+
   geom_point(aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
   geom_line(data=predicted_df_2,mapping=aes(x=YearCollected,psite_count))+
   geom_ribbon(data=predicted_df_2,mapping=aes(x=YearCollected,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
   xlab("year collected")+
-  ylab("parasite abundance (number of parasite individuals per host individual)")+
+  ylab("parasite abundance\n(number of parasite individuals\nper host individual)")+
   theme_minimal()+
   theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),
-        axis.text.y=element_text(size=14),
-        axis.title.y=element_text(size=16),
-        axis.title.x=element_text(size=16),
+        axis.text.y=element_text(size=25),
+        axis.title.y=element_text(size=30),
+        axis.text.x=element_text(size=25),
+        axis.title.x=element_text(size=30),
         panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
         panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
-  #annotate("text",label="effect of year:\np < 0.0001",x = 1.9, y = 0.45, size = 6)+
+  annotate("text",label="effect of year:\np = 0.1700",x = 1992, y = 75, size = 10)+
   theme(legend.position="top",legend.title = element_text(size = 18),
         legend.text = element_text(size=14))
 q2_plot
@@ -192,10 +201,10 @@ q2_plot
 
 # Addressing Question 3: 
 
-q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),psite_count))+
+q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),as.numeric(psite_count)))+
   geom_point(data=all_data,aes(group=psite_spp,color=psite_spp),size=4,pch=19)+
-  geom_line(data=predicted_df_1,mapping=aes(x=Sum.of.Number.Party.Hours,psite_count))+
-  geom_ribbon(data=predicted_df_1,mapping=aes(x=Sum.of.Number.Party.Hours,ymin=conf.low,ymax=conf.high),alpha=0.5)+
+  geom_line(data=predicted_df_4,mapping=aes(x=Sum.of.Number.Party.Hours,as.numeric(psite_count)))+
+  geom_ribbon(data=predicted_df_4,mapping=aes(x=Sum.of.Number.Party.Hours,ymin=conf.low,ymax=conf.high),alpha=0.5)+
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
   xlab("bird abundance (number of birds per party-hour)")+
@@ -207,15 +216,15 @@ q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),psite_count))+
         axis.title.x=element_text(size=16),
         panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
         panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
-  #annotate("text",label="effect of year:\np < 0.0001",x = 1.9, y = 0.45, size = 6)+
+  annotate("text",label="effect of bird abundance:\np = 0.0138",x = 17, y = 75, size = 12)+
   theme(legend.position="top",legend.title = element_text(size = 18),
         legend.text = element_text(size=14))
 q3_plot
 
 
-q3_prediction_plot<-ggplot(predictions,aes(x,predicted))+
-  geom_line(data=predictions,mapping=aes(x=x,y=predicted))+
-  geom_ribbon(data=predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),alpha=0.1)+
+q3_prediction_plot<-ggplot(predicted_df_4,aes(Sum.of.Number.Party.Hours,psite_count))+
+  geom_line(data=predicted_df_4,mapping=aes(x=Sum.of.Number.Party.Hours,y=psite_count))+
+  geom_ribbon(data=predicted_df_4,mapping=aes(x=Sum.of.Number.Party.Hours,ymin=conf.low,ymax=conf.high),alpha=0.1)+
   xlab("bird abundance (number of birds per party-hour)")+
   ylab("predicted parasite abundance (number of parasite individuals per host individual)")+
   theme_minimal()+
@@ -229,5 +238,4 @@ q3_prediction_plot<-ggplot(predictions,aes(x,predicted))+
   theme(legend.position="top",legend.title = element_text(size = 18),
         legend.text = element_text(size=14))
 q3_prediction_plot
-view(q3_prediction_plot)
 
