@@ -213,9 +213,9 @@ q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),psite_count))+
 q3_plot
 
 
-q3_prediction_plot<-ggplot(predictions,aes(x,predicted))+
-  geom_line(data=predictions,mapping=aes(x=x,y=predicted))+
-  geom_ribbon(data=predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),alpha=0.1)+
+q3_prediction_plot<-ggplot(predictions_2,aes(x,predicted))+
+  geom_line(data=predictions_2,mapping=aes(x=x,y=predicted))+
+  geom_ribbon(data=predictions_2,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),alpha=0.1)+
   xlab("bird abundance (number of birds per party-hour)")+
   ylab("predicted parasite abundance (number of parasite individuals per host individual)")+
   theme_minimal()+
@@ -229,5 +229,5 @@ q3_prediction_plot<-ggplot(predictions,aes(x,predicted))+
   theme(legend.position="top",legend.title = element_text(size = 18),
         legend.text = element_text(size=14))
 q3_prediction_plot
-view(q3_prediction_plot)
+
 
