@@ -8,6 +8,7 @@ library(parameters)
 library(DHARMa)
 library(emmeans)
 library(ggeffects)
+
 #Loading Datasets
 HYBAMA_data<- read_csv("data/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv", 
                        col_types = cols(Sex = col_character()))
@@ -80,7 +81,7 @@ before_ab_sandoval_levee<-ab_sandoval_levee %>%
   mutate(before_after_sandoval=case_when(
     YearCollected>=1975~"after",
     YearCollected>=1965 & YearCollected<1975~"during",
-    YearCollected<1965 ~"before",
+    YearCollected<1966 ~"before",
     TRUE ~ "no_intervention"
   ))
 #Setting Alb. Middle Rio Grande East Levee System One and Two bounds
@@ -101,7 +102,7 @@ before_ab_amrg_elevee <- ab_amrg_elevee %>%
   ))
 
 #Summing parasite counts
-before_ab_amrg_elevee$parasite_sum <- rowSums(before_ab_amrg_elevee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","myxo.b","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge","crus.d","crus.lersp","mono.salsp","mono.ss","trem.dips","trem.iz","trem.unk","nem.larv","nem.l","nem.myst","acanth.spk","cest.botsp","myxo.myxid","myxo.g","CRUS.LERCYP.SKIN","TREM.N.BODY_CAVITY","MONO.GYRSP.PELVICFIN","CRUS.FIN.DORSALFIN","MONO.GYRSP.DORSALFIN","TREM.DIPHUR.LIVER","TREM.NEASP.EYE","TREM.DIPHUR.CONNECTIVE_TISSUE","TREM.P.CONNECTIVE_TISSUE","TREM.DIPS.CONNECTIVETISSUE","TREM.CENT.INTESTINE","TREM.DIPS.INTESTINE","NEM.CAP.INTESTINE","CEST.B.INTESTINE","NEM.CONT.INTESTINE","TREM.BUC.INTESTINE","NEM.UNK.INTESTINE","NEM.LARV.INTESTINE","PROT.MYXSP.GILL(NUMBER_OF_CLUSTERS)","MYXO.M.GILL","MONO.DACSP.GILL","MONO.GYRSP.GILL","NEM.LARV.GALL BLADDER","TREM.CENT.FLUSH","TREM.DIPHUR.FLUSH","TREM.P.FLUSH")], na.rm=TRUE)
+before_ab_amrg_elevee$parasite_sum <- rowSums(before_ab_amrg_elevee[, c("cope.lern", "cope.imler","mono.dact","mono.gyro","nem.cl","nem.unk","trem.b","trem.d","trem.diplo","trem.dlum","trem.em","trem.fim","trem.gold","trem.l","trem.meta.unk","trem.ridge","crus.d","crus.lersp","mono.salsp","mono.ss","trem.dips","trem.iz","trem.unk","nem.larv","nem.l","nem.myst","acanth.spk","cest.botsp","CRUS.LERCYP.SKIN","TREM.N.BODY_CAVITY","MONO.GYRSP.PELVICFIN","CRUS.FIN.DORSALFIN","MONO.GYRSP.DORSALFIN","TREM.DIPHUR.LIVER","TREM.NEASP.EYE","TREM.DIPHUR.CONNECTIVE_TISSUE","TREM.P.CONNECTIVE_TISSUE","TREM.DIPS.CONNECTIVETISSUE","TREM.CENT.INTESTINE","TREM.DIPS.INTESTINE","NEM.CAP.INTESTINE","CEST.B.INTESTINE","NEM.CONT.INTESTINE","TREM.BUC.INTESTINE","NEM.UNK.INTESTINE","NEM.LARV.INTESTINE","MONO.DACSP.GILL","MONO.GYRSP.GILL","NEM.LARV.GALL BLADDER","TREM.CENT.FLUSH","TREM.DIPHUR.FLUSH","TREM.P.FLUSH")], na.rm=TRUE)
 #renaming data
 BACI_levee<-before_ab_amrg_elevee
 rename(BACI_levee, sample_id = `...1`)
@@ -163,13 +164,15 @@ predict_1 <- ggpredict(
   model,
   terms = c("corrales_locale", "before_after_corrales"),
 )
-predict_plot<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group))+
+predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group))+
   facet_wrap(~group)+
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
   geom_line(color = "#E30B5D") + 
   geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "#E30B5D", color = "#E30B5D") + 
-  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
-  theme(panel.background = element_blank())
+  labs(x = element_blank(), y = "Parasite Sum")+ 
+  theme(panel.background = element_blank(),
+        axis.title.y = element_text(face = "bold", size = 20))
+predict_C +theme(strip.text.x = element_text(face = "bold", size = 14))
 
 
 #NEW EAST LEVEE DATA
@@ -229,12 +232,15 @@ predict_2 <- ggpredict(
   E_model,
   terms = c("e_amrg_locale", "before_after_eamrg"),
 )
-predict_2<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
+predict_E<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
   geom_line(color = "orange") + 
   geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "orange", color = "orange") + 
-  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
-  theme(panel.background = element_blank())
+  labs(x = element_blank(), y = "Parasite Sum")+ 
+  theme(panel.background = element_blank(),
+        axis.title.y = element_text(face = "bold", size = 20))
+predict_E +theme(
+  strip.text.x = element_text(face = "bold", size = 14))
 
 
 #NEW WEST LEVEE DATA
@@ -274,7 +280,6 @@ w_levee_BACI %>%
     y = "Average Parasite Count"
   )
 
-
 W_model<-glmmTMB(
   parasite_sum~ w_amrg_locale*before_after_wamrg+(1|YearCollected),
   family = nbinom2(),
@@ -295,12 +300,16 @@ predict_3 <- ggpredict(
   terms = c("w_amrg_locale", "before_after_wamrg"),
   bias_correction = TRUE,
 )
-predict_3<-ggplot(data = predict_3, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
+predict_W<-ggplot(data = predict_3, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
   geom_line(color = "orange") + 
   geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "orange", color = "orange") + 
-  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
-  theme(panel.background = element_blank())
+  labs(x = element_blank(), y = "Parasite Sum")+ 
+  theme(panel.background = element_blank(),
+        axis.title.y = element_text(face = "bold", size = 20))
+predict_W +theme(
+    strip.text.x = element_text(face = "bold", size = 14)
+  )
 
 
 #NEW SANDOVAL DATA
@@ -361,13 +370,17 @@ predict_4 <- ggpredict(
   terms = c("sandoval_locale", "before_after_sandoval"),
   bias_correction = TRUE,
 )
-predict_4<-ggplot(data = predict_4, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
+predict_S<-ggplot(data = predict_4, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
   geom_line(color = "green") + 
   geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "green", color = "green") + 
-  labs(x = element_blank(), y = "Predicted Parasite Sum")+ 
-  theme(panel.background = element_blank())
-
+  labs(x = element_blank(), y = "Parasite Sum", )+ 
+  theme(panel.background = element_blank(),
+        axis.title.y = element_text(face = "bold", size = 20))
+predict_S +
+  theme(
+    strip.text.x = element_text(face = "bold", size = 14)
+  )
 
 # the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
 emm <- emmeans(S_model, ~ sandoval_locale*before_after_sandoval)
