@@ -126,26 +126,26 @@ corrales_BACI$corrales_locale<-factor(corrales_BACI$corrales_locale,levels=
 )
 
 corrales_BACI %>%
-  group_by(corrales_locale,before_after_corrales) %>% 
-  summarise(
-    avg_parasites = mean(parasite_sum, na.rm = TRUE),
-    sd_parasites = sd(parasite_sum, na.rm = TRUE),
-    se_parasites = sd(parasite_sum) / sqrt(n()),
-    sample_id = n(),
-  )
-corrales_BACI %>%
   group_by(corrales_locale, before_after_corrales) %>%
-  summarise(mean_parasites = mean(parasite_sum), .groups = "drop") %>%
+  summarise(
+    mean_parasites = mean(parasite_sum, na.rm = TRUE),
+    se_parasites = sd(parasite_sum, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  ) %>%
   ggplot(aes(x = before_after_corrales, y = mean_parasites, color = corrales_locale)) +
   geom_point(size = 3) +
-  geom_line(aes(group = corrales_locale)) +
+  geom_line(aes(group = corrales_locale), linewidth = 1) +
+  geom_errorbar(
+    aes(ymin = mean_parasites - se_parasites, ymax = mean_parasites + se_parasites),
+    width = 0.2,
+    linewidth = 0.5,
+    col="black"
+  ) +
   labs(
-    title = "Average Parasite Load per Fish in Corrales",
+    title = "Average Parasite Count per Fish Regarding Corrales",
     x = "Time Period",
     y = "Average Parasite Count"
   )
-
-
 model<-glmmTMB(
   parasite_sum~ corrales_locale*before_after_corrales,
   family = nbinom2(),
@@ -163,12 +163,13 @@ plot(parameters(model))
 predict_1 <- ggpredict(
   model,
   terms = c("corrales_locale", "before_after_corrales"),
-)
+) 
 predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group))+
-  facet_wrap(~group)+
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
+  facet_wrap(~group)+ 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5))+
   geom_line(color = "#E30B5D") + 
   geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "#E30B5D", color = "#E30B5D") + 
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.2)+
   labs(x = element_blank(), y = "Parasite Sum")+ 
   theme(panel.background = element_blank(),
         axis.title.y = element_text(face = "bold", size = 20))
