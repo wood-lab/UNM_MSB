@@ -31,23 +31,24 @@ library(glmmTMB)
 library(DHARMa)
 library(parameters)
 library(stats)
+library(parameters)
 ```
 
 Next, we import the most up-to-date data
 ```{r data_importing}
-#METADATA
+# METADATA
 meta_data<-read.csv(here("data", "all_lots_okay_to_dissect.csv"))
 meta_data$combo<-paste(meta_data$CI,meta_data$decade,sep="_")
 
-#HYBAMA
+# HYBAMA
 # here is code to read in unpolished dissection data, but since we now have polished data, this part is unnecessary:
-hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.07.02.csv"))
+hyb_ama_today<-read.csv(here("data", "HYBAMA Data_2025.08.01.csv"))
 hyb_ama_with_metadata<-merge(hyb_ama_today, meta_data, by = "CatalogNumber", all.x = TRUE)
 hybama_today <- hyb_ama_with_metadata %>% 
   janitor::clean_names()
 view(hybama_today)
 
-#here is code to read in polished data:
+# here is code to read in polished data:
 hybama_data <- read.csv(here("data", "/processed/Hybognathus_amarus_processed_human_readable_2025.07.06.csv"))
 view(hybama_data)
 hybama_data <- hybama_data %>% 
@@ -56,17 +57,29 @@ view(hybama_data)
 
 # GAMAFF
 # reading in unpolished data
-gam_aff_today<-read.csv(here("data", "GAMAFF Dataset_2025.07.21.csv"))
+gam_aff_today<-read.csv(here("data", "GAMAFF Dataset_2025.08.01.csv"))
 gam_aff_with_metadata<-merge(gam_aff_today, meta_data, by = "CatalogNumber", all.x = TRUE)
 gamaff_today <- gam_aff_with_metadata %>% 
   janitor::clean_names()
 view(gamaff_today)
 
 # reading in polished data 
-gamaff_data <- read.csv(here("data", "/processed/Gambusia_affinis_processed_human_readable_2025.07.21.csv"))
+gamaff_data <- read.csv(here("data", "/processed/Gambusia_affinis_processed_human_readable_2025.08.01.csv"))
 gamaff_data <- gamaff_data %>% 
   janitor::clean_names()
 View(gamaff_data)
+
+# PIMPRO
+# reading in unpolished data
+pimpro_today <- read.csv(here("data", "PIMPRO Data_2025.08.01.csv"))
+
+#remove 2021+2022 data
+pimpro_today <- pimpro_today %>%
+  slice(-(1:36))
+pimpro_with_metadata<-merge(pimpro_today, meta_data, by = "CatalogNumber", all.x = TRUE)
+pimpro_today <- pimpro_with_metadata %>% 
+  janitor::clean_names()
+view(pimpro_today)
 ```
 
 
@@ -325,3 +338,77 @@ plot(gamaff_pred, show_data = TRUE, dot_alpha = 1) +
 ```
 
 
+
+
+# ALL TOGETHER
+
+## Combine Data
+We have to combine all our datasheets into one single datasheet in order to get information about species!
+```{r combo_datasheet}
+# first make sure all the datasheets have the same columns: gambusia already has this arrangement since we already did some combining
+pimpro_merge <- pimpro_today %>% 
+  select(catalog_number, individual_id, fish_species, year_fish_collected, month_fish_collected, day_fish_collected, total_length_mm, standard_length_mm, weight_mg, latitude, longitude, ci, decade, combo)
+
+hybama_merge <- hybama_today %>%
+  select(catalog_number, individual_id, fish_species, year_fish_collected, month_fish_collected, day_fish_collected, total_length_mm, standard_length_mm, weight_mg, latitude, longitude, ci, decade, combo)
+
+# now merge them one at a time!
+merged1 <- rbind(pimpro_merge, hybama_merge)
+merged <- rbind(merged1, gamaff_random)
+
+View(merged)
+
+unique(merged$fish_species)
+```
+
+## Models
+Now we'll run some models on this merged dataset!
+```{r merged_models}
+merge_model1 <- glmmTMB(total_length_mm ~ year_fish_collected + fish_species + (1|catalog_number), data=merged)
+summary(merge_model1)
+#all the fish species are distinct from one another, as noted by their significance codes: that makes sense! let's add in ci and latitude and see if those are important factors
+
+merge_model2 <- glmmTMB(total_length_mm ~ year_fish_collected + fish_species + ci + (1|catalog_number), data=merged)
+summary(merge_model2)
+# ci isn't important!
+
+merge_model3 <- glmmTMB(total_length_mm ~ year_fish_collected + fish_species + latitude + (1|catalog_number), data=merged)
+summary(merge_model3)
+# latitude isn't significant either!
+
+# which of these models is best?
+AIC(merge_model1)
+AIC(merge_model2)
+AIC(merge_model3)
+#looks like model 3 is the best! we'll go with that: notice it uses latitude as another predictor, which ties in with one of our initial interests in the dataset. 
+```
+
+## Plotting Model
+
+Now let's take the best model and make it pretty!
+```{r gamaff_plot}
+merged_pred <- ggpredict(merge_model3, c("year_fish_collected", "fish_species"))
+
+plot(merged_pred, show_data = TRUE, dot_alpha = 1) + 
+  labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
+    scale_color_manual(values = c("Hybognathus amarus" = "red", 
+                                "Gambusia affinis" = "blue", 
+                                "Pimephales promelas" = "yellow")) +
+    scale_fill_manual(values = c("Hybognathus amarus" = "red", 
+                                "Gambusia affinis" = "blue", 
+                                "Pimephales promelas" = "yellow")) +
+  theme_bw() +
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line())
+```
+
+# Explaining Model Output
+
+```{r merge_model3}
+summary(merge_model3)
+```
+You'll notice our model output displays the intercept, year, latitude, and ONLY two species. This is because the model has automatically set the factor that comes first alphabetically (*Gambusia affinis*) as the "reference" factor, or intercept. So what this means: the intercept is 240.213, which means at year 0 (not a real thing in our case), *Gambusia affinis* would be 240mm long, *Hybognathus amarus* would be 240+19.78mm long, and *Pimephales promelas* would be 240+12.28mm long. The significant p-values for HYBAMA and PIMPRO are basically confirming that these are disinct species, and isn't super relevant for us. 
+
+Instead, we're more interested in the year and latitude factors. These estimates are both NEGATIVE, which means that as years increase, size decreases; and as latitude increases, size decreases. However, neither of them are significant, so we can't really interpret them. Essentially, none of these species are changing their body size through time. 
