@@ -16,8 +16,7 @@ HYBAMA_data<- read_csv("data/processed/Hybognathus_amarus_processed_machine_read
 HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
                   ifelse(HYBAMA_data$Sex == FALSE, "F", NA))
 
-GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.07.21.csv")
-
+GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
 fish_data<- bind_rows(HYBAMA_data,GAMAFF_data,)
 levee_data<- read.csv("reu/bradyn/al_midrio_R_data.csv")
 #Setting Cochiti dam bounds and dates
@@ -38,7 +37,7 @@ ab_corrales_levee <- BACI_dam %>%
   mutate(corrales_locale = case_when(
     Latitude > 35.28136319711 ~"above",
     Latitude >= 35.1609175651113 & Latitude <= 35.28136319711 ~ "within",
-    Latitude < 35.1609175651113 & Latitude >=35.095806160112076 ~ "below",
+    Latitude < 35.1609175651113 & Latitude >=34.94913162611374 ~ "below",
     TRUE ~ "no_intervention"
   ))
 
@@ -134,34 +133,35 @@ corrales_BACI$corrales_locale<-factor(corrales_BACI$corrales_locale,levels=
 )
 
 corrales_BACI %>%
-  group_by(corrales_locale, before_after_corrales) %>%
+  filter(!(taxon_group %in% c("myxozoa", "copepoda", "other"))) %>%
+  group_by(corrales_locale, before_after_corrales, taxon_group) %>%
   summarise(
     mean_parasites = mean(psite_count, na.rm = TRUE),
     se_parasites = sd(psite_count, na.rm = TRUE) / sqrt(n()),
     .groups = "drop"
   ) %>%
   ggplot(aes(x = before_after_corrales, y = mean_parasites, color = corrales_locale)) +
-  geom_point(size = 3) +
-  geom_line(aes(group = corrales_locale), linewidth = 1) +
+  geom_point(aes(group = taxon_group), size = 3) +
+  geom_line(aes(group = interaction(corrales_locale, taxon_group)), linewidth = 1) +
   geom_errorbar(
-    aes(ymin = mean_parasites - se_parasites, ymax = mean_parasites + se_parasites),
-    width = 0.2,
-    linewidth = 0.5,
-    col="black"
+    aes(ymin = mean_parasites - se_parasites, ymax = mean_parasites + se_parasites, group = taxon_group),
+    width = 0.2, linewidth = 0.5, col = "black"
   ) +
+  facet_wrap(~ taxon_group) +
   labs(
     title = "Average Parasite Count per Fish Regarding Corrales",
     x = "Time Period",
     y = "Average Parasite Count"
   )
-view(corrales_BACI)
+corrales_BACI<-corrales_BACI %>%
+  filter(!(taxon_group %in% c("myxozoan", "copepoda", "other")))
+
 model<-glmmTMB(
   psite_count~ corrales_locale*before_after_corrales+taxon_group,
   family = nbinom2(),
   data= corrales_BACI,
   ziformula=~1
 )
-
 summary<- corrales_BACI %>% 
   group_by(corrales_locale,before_after_corrales) %>% 
   summarize(total=n())
@@ -176,12 +176,12 @@ predict_1 <- ggpredict(
   terms = c("corrales_locale", "before_after_corrales"),
   bias_correction =TRUE
 ) 
-predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group))+
-  facet_wrap(~group)+ 
+predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, taxon_group = ~ taxon_group))+
+  facet_wrap(~ taxon_group)+ 
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5))+
   geom_line(color = "#E30B5D") + 
   geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "#E30B5D", color = "#E30B5D") + 
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.2)+
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = ~ taxon_group), alpha = 0.2)+
   labs(x = element_blank(), y = "Parasite Sum")+ 
   theme(panel.background = element_blank(),
         axis.title.y = element_text(face = "bold", size = 20))
