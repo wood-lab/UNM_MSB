@@ -391,12 +391,12 @@ merged_pred <- ggpredict(merge_model3, c("year_fish_collected", "fish_species"))
 
 plot(merged_pred, show_data = TRUE, dot_alpha = 1) + 
   labs(x = 'Year Collected', y = 'Standard Length in mm',title=NULL) +
-    scale_color_manual(values = c("Hybognathus amarus" = "red", 
-                                "Gambusia affinis" = "blue", 
-                                "Pimephales promelas" = "yellow")) +
-    scale_fill_manual(values = c("Hybognathus amarus" = "red", 
-                                "Gambusia affinis" = "blue", 
-                                "Pimephales promelas" = "yellow")) +
+    scale_color_manual(values = c("Hybognathus amarus" = "#5A86AD", 
+                                "Gambusia affinis" = "#825F87", 
+                                "Pimephales promelas" = "#C14A09")) +
+    scale_fill_manual(values = c("Hybognathus amarus" = "#5A86AD", 
+                                "Gambusia affinis" = "#825F87", 
+                                "Pimephales promelas" = "#C14A09")) +
   theme_bw() +
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
