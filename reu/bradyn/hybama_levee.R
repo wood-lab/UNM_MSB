@@ -16,8 +16,7 @@ HYBAMA_data<- read_csv("data/processed/Hybognathus_amarus_processed_machine_read
 HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
                   ifelse(HYBAMA_data$Sex == FALSE, "F", NA))
 
-GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.07.21.csv")
-
+GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
 fish_data<- bind_rows(HYBAMA_data,GAMAFF_data,)
 levee_data<- read.csv("reu/bradyn/al_midrio_R_data.csv")
 #Setting Cochiti dam bounds and dates
@@ -38,7 +37,7 @@ ab_corrales_levee <- BACI_dam %>%
   mutate(corrales_locale = case_when(
     Latitude > 35.28136319711 ~"above",
     Latitude >= 35.1609175651113 & Latitude <= 35.28136319711 ~ "within",
-    Latitude < 35.1609175651113 & Latitude >=35.095806160112076 ~ "below",
+    Latitude < 35.1609175651113 & Latitude >=34.94913162611374 ~ "below",
     TRUE ~ "no_intervention"
   ))
 
@@ -54,7 +53,7 @@ before_ab_corrales_levee <- ab_corrales_levee %>%
 #setting Alb. Middle Rio Grande West Levee bounds
 ab_amrg_wlevee <- before_ab_corrales_levee %>% 
   mutate(w_amrg_locale = case_when(
-    Latitude>35.095806160112076 ~"above",
+    Latitude>35.095806160112076 & Latitude <=35.2 ~"above",
     Latitude>= 34.94913162611374 & Latitude <=35.095806160112076 ~ "within",
     Latitude < 34.94913162611374 ~"below",
     TRUE ~ "no_intervention"
@@ -62,9 +61,9 @@ ab_amrg_wlevee <- before_ab_corrales_levee %>%
 #Setting Alb. Middle Rio Grande West Levee construction dates
 before_ab_amrg_wlevee<-ab_amrg_wlevee %>% 
   mutate(before_after_wamrg=case_when(
-    YearCollected>=1956 & YearCollected<=1975~"after",
+    YearCollected>=1956 & YearCollected<=1976~"after",
     YearCollected>=1951 & YearCollected <1956 ~"during",
-    YearCollected<1951 ~"before",
+    YearCollected<1951 & YearCollected>=1931 ~"before",
     TRUE ~ "no_intervention"
   ))
 #renaming data
@@ -80,9 +79,9 @@ ab_sandoval_levee<-few_levee %>%
 #Setting Sandoval Levee construction dates
 before_ab_sandoval_levee<-ab_sandoval_levee %>% 
   mutate(before_after_sandoval=case_when(
-    YearCollected>=1975~"after",
+    YearCollected>=1975 & YearCollected<=1995~"after",
     YearCollected>=1965 & YearCollected<1975~"during",
-    YearCollected<1966 ~"before",
+    YearCollected<1966 & YearCollected>=1946 ~"before",
     TRUE ~ "no_intervention"
   ))
 #Setting Alb. Middle Rio Grande East Levee System One and Two bounds
@@ -96,9 +95,9 @@ ab_amrg_elevee<-before_ab_sandoval_levee %>%
 #Setting Alb. Middle Rio Grande East Levee System One and Two construction dates
 before_ab_amrg_elevee <- ab_amrg_elevee %>% 
   mutate(before_after_eamrg=case_when(
-    YearCollected>=1969 ~"after",
+    YearCollected>=1969 & YearCollected<=1989 ~"after",
     YearCollected>=1951 & YearCollected <1969 ~"during",
-    YearCollected<1951 ~"before",
+    YearCollected<1951 & YearCollected>=1931 ~"before",
     TRUE ~ "no_intervention"
   ))
 #Summing parasite counts
@@ -134,40 +133,40 @@ corrales_BACI$corrales_locale<-factor(corrales_BACI$corrales_locale,levels=
 )
 
 corrales_BACI %>%
-  group_by(corrales_locale, before_after_corrales) %>%
+  filter(!(taxon_group %in% c("myxozoa", "copepoda", "other"))) %>%
+  group_by(corrales_locale, before_after_corrales, taxon_group) %>%
   summarise(
     mean_parasites = mean(psite_count, na.rm = TRUE),
     se_parasites = sd(psite_count, na.rm = TRUE) / sqrt(n()),
     .groups = "drop"
   ) %>%
   ggplot(aes(x = before_after_corrales, y = mean_parasites, color = corrales_locale)) +
-  geom_point(size = 3) +
-  geom_line(aes(group = corrales_locale), linewidth = 1) +
+  geom_point(aes(group = taxon_group), size = 3) +
+  geom_line(aes(group = interaction(corrales_locale, taxon_group)), linewidth = 1) +
   geom_errorbar(
-    aes(ymin = mean_parasites - se_parasites, ymax = mean_parasites + se_parasites),
-    width = 0.2,
-    linewidth = 0.5,
-    col="black"
+    aes(ymin = mean_parasites - se_parasites, ymax = mean_parasites + se_parasites, group = taxon_group),
+    width = 0.2, linewidth = 0.5, col = "black"
   ) +
+  facet_wrap(~ taxon_group) +
   labs(
     title = "Average Parasite Count per Fish Regarding Corrales",
     x = "Time Period",
     y = "Average Parasite Count"
   )
-view(corrales_BACI)
+corrales_BACI<-corrales_BACI %>%
+  filter(!(taxon_group %in% c("myxozoan", "copepoda", "other")))
+
 model<-glmmTMB(
-  psite_count~ corrales_locale*before_after_corrales+taxon_group,
+  psite_count~ corrales_locale*before_after_corrales+(1|CatalogNumber)+(1|taxon_group),
   family = nbinom2(),
   data= corrales_BACI,
   ziformula=~1
 )
-
 summary<- corrales_BACI %>% 
   group_by(corrales_locale,before_after_corrales) %>% 
   summarize(total=n())
 
 cmodelOutput<-simulateResiduals(fittedModel = model, plot = TRUE)
-testOutliers(n)
 summary(model)
 plot(parameters(model))
 
@@ -176,12 +175,12 @@ predict_1 <- ggpredict(
   terms = c("corrales_locale", "before_after_corrales"),
   bias_correction =TRUE
 ) 
-predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, group = group))+
-  facet_wrap(~group)+ 
+predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, taxon_group = ~ taxon_group))+
+  facet_wrap(~ taxon_group)+ 
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5))+
   geom_line(color = "#E30B5D") + 
   geom_point(size = 5, pch=21, position=position_dodge(width=0.5), fill = "#E30B5D", color = "#E30B5D") + 
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.2)+
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = ~ taxon_group), alpha = 0.2)+
   labs(x = element_blank(), y = "Parasite Sum")+ 
   theme(panel.background = element_blank(),
         axis.title.y = element_text(face = "bold", size = 20))
@@ -208,14 +207,16 @@ e_levee_BACI$e_amrg_locale<-factor(e_levee_BACI$e_amrg_locale,levels=
 e_levee_BACI %>%
   group_by(e_amrg_locale,before_after_eamrg) %>% 
   summarise(
-    avg_parasites = mean(parasite_sum, na.rm = TRUE),
-    sd_parasites = sd(parasite_sum, na.rm = TRUE),
-    se_parasites = sd(parasite_sum) / sqrt(n()),
+  n_obs        = sum(!is.na(psite_count)),
+avg_parasites= mean(psite_count, na.rm = TRUE),
+sd_parasites = sd(psite_count, na.rm = TRUE),
+se_parasites = sd_parasites / sqrt(n_obs),
+
     sample_id = n(),
   )
 e_levee_BACI %>%
   group_by(e_amrg_locale, before_after_eamrg) %>%
-  summarise(mean_parasites = mean(parasite_sum), .groups = "drop") %>%
+  summarise(mean_parasites = mean(psite_count,na.rm=TRUE), .groups = "drop") %>%
   ggplot(aes(x = before_after_eamrg, y = mean_parasites, color = e_amrg_locale)) +
   geom_point(size = 3) +
   geom_line(aes(group = e_amrg_locale)) +
@@ -225,13 +226,14 @@ e_levee_BACI %>%
     y = "Average Parasite Count"
   )
 
-view(e_levee_BACI)
+data_no_trem <- subset(e_levee_BACI, taxon_group != "monogenea")
 E_model<-glmmTMB(
-  parasite_sum~ e_amrg_locale*before_after_eamrg+s,
+  psite_count~ e_amrg_locale*before_after_eamrg+(1|YearCollected),
   family = nbinom2(),
-  data= e_levee_BACI,
+  data= data_no_trem,
   ziformula=~1
 )
+
 
 summary<- e_levee_BACI %>% 
   group_by(e_amrg_locale,before_after_eamrg) %>% 
@@ -240,10 +242,11 @@ summary<- e_levee_BACI %>%
 emodelOutput<-simulateResiduals(fittedModel = E_model, plot = TRUE)
 summary(E_model)
 plot(parameters(E_model))
-
+#FULL PREDICT PLOT
 predict_2 <- ggpredict(
   E_model,
-  terms = c("e_amrg_locale", "before_after_eamrg"),
+  terms = c("before_after_eamrg", "e_amrg_locale"),
+  bias_correction = TRUE,
 )
 predict_E<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.05, position = position_dodge(width = 0.5)) + 
@@ -254,8 +257,19 @@ predict_E<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +f
         axis.title.y = element_text(face = "bold", size = 20))
 predict_E +theme(
   strip.text.x = element_text(face = "bold", size = 14))
-
-
+#CONDENSED
+ggplot(predict_2, aes(x = x, y = predicted, color = group)) +
+  geom_point(size = 5) +
+  geom_line(aes(group = group), linewidth = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  scale_color_manual(
+    values = c("above"  = "blue", "below"= "orange","within" = "darkgreen")) +
+  labs(title  = "East Alb. Middle Rio Grande",x= "Time Period",y = "Predicted Parasite Count",color  = "Location") +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.title = element_text(face = "bold"),
+    legend.position = "right"
+  )
 #NEW WEST LEVEE DATA
 w_levee_BACI<-BACI_levee
 w_levee_BACI<-w_levee_BACI %>% 
@@ -276,25 +290,16 @@ w_levee_BACI$w_amrg_locale<-factor(w_levee_BACI$w_amrg_locale,levels=
 w_levee_BACI %>%
   group_by(w_amrg_locale,before_after_wamrg) %>% 
   summarise(
-    avg_parasites = mean(parasite_sum, na.rm = TRUE),
-    sd_parasites = sd(parasite_sum, na.rm = TRUE),
-    se_parasites = sd(parasite_sum) / sqrt(n()),
+    n_obs        = sum(!is.na(psite_count)),
+    avg_parasites= mean(psite_count, na.rm = TRUE),
+    sd_parasites = sd(psite_count, na.rm = TRUE),
+    se_parasites = sd_parasites / sqrt(n_obs),
+    
     sample_id = n(),
-  )
-w_levee_BACI %>%
-  group_by(w_amrg_locale, before_after_wamrg) %>%
-  summarise(mean_parasites = mean(parasite_sum), .groups = "drop") %>%
-  ggplot(aes(x = before_after_wamrg, y = mean_parasites, color = w_amrg_locale)) +
-  geom_point(size = 3) +
-  geom_line(aes(group = w_amrg_locale)) +
-  labs(
-    title = "Average Parasite Load per Fish in West Levee",
-    x = "Time Period",
-    y = "Average Parasite Count"
   )
 
 W_model<-glmmTMB(
-  parasite_sum~ w_amrg_locale*before_after_wamrg+(1|YearCollected),
+  psite_count~ w_amrg_locale*before_after_wamrg+(1|YearCollected),
   family = nbinom2(),
   data= w_levee_BACI,
   ziformula=~1
@@ -307,10 +312,10 @@ summary<- w_levee_BACI %>%
 wmodelOutput<-simulateResiduals(fittedModel = W_model, plot = TRUE)
 summary(W_model)
 plot(parameters(W_model))
-
+#FULL PLOT
 predict_3 <- ggpredict(
   W_model,
-  terms = c("w_amrg_locale", "before_after_wamrg"),
+  terms = c("before_after_wamrg", "w_amrg_locale"),
   bias_correction = TRUE,
 )
 predict_W<-ggplot(data = predict_3, aes(x = x, y = predicted, group = group)) +facet_wrap(~group) +
@@ -323,7 +328,19 @@ predict_W<-ggplot(data = predict_3, aes(x = x, y = predicted, group = group)) +f
 predict_W +theme(
     strip.text.x = element_text(face = "bold", size = 14)
   )
-
+#CONDENSED
+ggplot(predict_3, aes(x = x, y = predicted, color = group)) +
+  geom_point(size = 5) +
+  geom_line(aes(group = group), linewidth = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  scale_color_manual(
+    values = c("above"  = "blue", "below"= "orange","within" = "darkgreen")) +
+  labs(title  = "West Alb. Middle Rio Grande",x= "Time Period",y = "Predicted Parasite Count",color  = "Location") +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.title = element_text(face = "bold"),
+    legend.position = "right"
+  )
 
 #NEW SANDOVAL DATA
 sandoval_BACI<-BACI_levee

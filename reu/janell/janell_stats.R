@@ -111,13 +111,21 @@ predicted_df_1 <- data.frame(Sum.of.Number.Party.Hours = predictions_1$x, psite_
                            conf.low = predictions_1$conf.low, conf.high = predictions_1$conf.high)
 
 
-model_2<-glmer.nb(as.numeric(psite_count)~Sum.of.Number.Party.Hours+YearCollected+
+model_2<-glmer.nb(as.numeric(psite_count)~Sum.of.Number.Party.Hours+YearCollected+Latitude+
                     offset(log(TotalLength_mm))+(1|fish_spp/psite_spp),data=all_data)
 summary(model_2)
 
 predictions_2<-ggpredict(model_2,c("YearCollected"))
 
 str(predictions_2)
+
+# Since model_2 is our final model for parasites, let's tally up how many parasites there would have been at the 
+# beginning versus at the end. 
+
+predictions <- ggpredict(model_2, terms = c("YearCollected [1938, 2002]"))
+print(predictions)
+1-(0.05/0.11)
+
 
 predicted_df_2 <- data.frame(YearCollected = predictions_2$x, psite_count=predictions_2$predicted,
                            conf.low = predictions_2$conf.low, conf.high = predictions_2$conf.high)
@@ -140,6 +148,13 @@ str(predictions_3)
 predicted_df_3 <- data.frame(YearCollected = predictions_3$x, Sum.of.Number.Party.Hours=predictions_3$predicted,
                              conf.low = predictions_3$conf.low, conf.high = predictions_3$conf.high)
 
+
+# Since model_3 is our final model for birds, let's tally up how many parasites there would have been at the 
+# beginning versus at the end. 
+
+predictions <- ggpredict(model_3, terms = c("YearCollected [1938, 2002]"))
+print(predictions)
+(4.03/1.88)
 
 plot(all_data$psite_count~all_data$Sum.of.Number.Party.Hours)
 plot(all_data$psite_count~all_data$YearCollected)
