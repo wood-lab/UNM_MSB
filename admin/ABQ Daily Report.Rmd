@@ -310,7 +310,7 @@ Discovered a lot (MSB:Fish:6300) where there are not 5 fish that fit the latitud
 
 Download latest file 
 ```{r}
-pim_pro_today<-read.csv(here("data", "PIMPRO Data_2025.07.31.csv"))
+pim_pro_today<-read.csv(here("data", "PIMPRO Data_2025.08.05.csv"))
                         
 length(pim_pro_today$CatalogNumber)
 ```
@@ -370,6 +370,9 @@ Check that body size is invariant through time
 ```{r}
 summary(glm(pim_pro_with_metadata$Total_Length_mm~pim_pro_with_metadata$YearCollected))
 plot(pim_pro_with_metadata$Total_Length_mm~pim_pro_with_metadata$YearCollected)
+
+# 8/5 -- we are starting to see a minor significant decrease in body size through time, start selecting fish > 50 mm between 1970 and 2010 
+
 summary(glm(pim_pro_with_metadata$Total_Length_mm~pim_pro_with_metadata$Latitude))
 plot(pim_pro_with_metadata$Total_Length_mm~pim_pro_with_metadata$Latitude)
 ```
