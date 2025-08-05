@@ -208,12 +208,13 @@ q3_plot<-ggplot(all_data,aes(jitter(Sum.of.Number.Party.Hours,10),as.numeric(psi
   scale_color_manual(name = c("parasite taxonomic group"), values=plasma_pal, 
                      limits = c("trem.diplo","trem.dlum","trem.em","trem.dips"))+
   xlab("bird abundance (number of birds per party-hour)")+
-  ylab("parasite abundance (number of parasite individuals per host individual)")+
+  ylab("parasite abundance\n(number of parasite individuals\nper host individual)")+
   theme_minimal()+
   theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),
-        axis.text.y=element_text(size=14),
-        axis.title.y=element_text(size=16),
-        axis.title.x=element_text(size=16),
+        axis.text.y=element_text(size=25),
+        axis.title.y=element_text(size=30),
+        axis.text.x=element_text(size=25),
+        axis.title.x=element_text(size=30),
         panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
         panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
   annotate("text",label="effect of bird abundance:\np = 0.0138",x = 17, y = 75, size = 12)+
