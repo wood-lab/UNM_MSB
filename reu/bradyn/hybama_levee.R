@@ -165,18 +165,33 @@ predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, group=group))+
         axis.title.y = element_text(face = "bold", size = 20))
 predict_C +theme(strip.text.x = element_text(face = "bold", size = 14))
 #CONDENSED
-ggplot(predict_1, aes(x = x, y = predicted, color = group)) +
-  geom_jitter(width = 0.15, height = 0, size = 5) +
-  geom_line(aes(group = group), linewidth = 1) +
+predict_1$x_num <- as.numeric(predict_1$x)
+set.seed(1000)
+predict_1$x_jittered <- predict_1$x_num + runif(nrow(predict_1), -0.01, 0.01)
+ggplot(predict_1, aes(x = x_jittered, y = predicted, color = group)) +
+  geom_point(size=5) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  geom_line(aes(group = group), linewidth = 1) +
+  scale_x_continuous(
+    breaks = 1:3,
+    labels = levels(predict_1$x)
+  ) +
   scale_color_manual(
-    values = c("above"  = "blue", "below"= "orange","within" = "darkgreen")) +
-  labs(title  = "Corrales",x= "Time Period",y = "Predicted Parasite Count",color  = "Location") +
+    values = c("above"  = "blue", "below" = "orange", "within" = "darkgreen")
+  ) +
+  labs(
+    title = "Corrales",
+    x = "Time Period",
+    y = "Predicted Parasite Count",
+    color = "Location"
+  ) +
+  coord_cartesian(ylim = c(0, 0.2)) +
   theme_minimal(base_size = 14) +
   theme(
     axis.title = element_text(face = "bold"),
     legend.position = "right"
   )
+
 #NEW EAST LEVEE DATA
 e_levee_BACI<-BACI_levee
 e_levee_BACI<-e_levee_BACI %>% 
@@ -223,18 +238,33 @@ predict_E<-ggplot(data = predict_2, aes(x = x, y = predicted, group = group)) +f
 predict_E +theme(
   strip.text.x = element_text(face = "bold", size = 14))
 #CONDENSED
-ggplot(predict_2, aes(x = x, y = predicted, color = group)) +
-  geom_jitter(width = 0.15, height = 0, size = 5) +
-  geom_line(aes(group = group), linewidth = 1) +
+predict_2$x_num <- as.numeric(predict_2$x)
+set.seed(42)
+predict_2$x_jittered <- predict_2$x_num + runif(nrow(predict_2), -0.15, 0.15)
+ggplot(predict_2, aes(x = x_jittered, y = predicted, color = group)) +
+  geom_point(size = 5) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  geom_line(aes(group = group), linewidth = 1) +
+  scale_x_continuous(
+    breaks = 1:3,
+    labels = levels(predict_2$x)
+  ) +
   scale_color_manual(
-    values = c("above"  = "blue", "below"= "orange","within" = "darkgreen")) +
-  labs(title  = "East Alb. Middle Rio Grande",x= "Time Period",y = "Predicted Parasite Count",color  = "Location") +
+    values = c("above"  = "blue", "below" = "orange", "within" = "darkgreen")
+  ) +
+  labs(
+    title = "East Alb. Middle Rio Grande",
+    x = "Time Period",
+    y = "Predicted Parasite Count",
+    color = "Location"
+  ) +
+  coord_cartesian(ylim = c(0, 0.3)) +
   theme_minimal(base_size = 14) +
   theme(
     axis.title = element_text(face = "bold"),
     legend.position = "right"
   )
+
 #NEW WEST LEVEE DATA
 w_levee_BACI<-BACI_levee
 w_levee_BACI<-w_levee_BACI %>% 
@@ -279,19 +309,27 @@ predict_W +theme(
     strip.text.x = element_text(face = "bold", size = 14)
   )
 #CONDENSED
-ggplot(predict_3, aes(x = x, y = predicted, color = group)) +
-  geom_jitter(width = 0.15, height = 0, size = 5) +
-  geom_line(aes(group = group), linewidth = 1) +
+predict_3$x_num <- as.numeric(predict_3$x)
+set.seed(42)
+predict_3$x_jittered <- predict_3$x_num + runif(nrow(predict_3), -0.15, 0.15)
+ggplot(predict_3, aes(x = x_jittered, y = predicted, color = group)) +
+  geom_point(size = 5) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  geom_line(aes(group = group), linewidth = 1) +
+  scale_x_continuous(
+    breaks = 1:2,
+    labels = levels(predict_3$x)
+  ) +
   scale_color_manual(
-    values = c("above"  = "blue", "below"= "orange", "within" = "darkgreen")
+    values = c("above"  = "blue", "below" = "orange", "within" = "darkgreen")
   ) +
   labs(
-    title  = "West Alb. Middle Rio Grande",
+    title = "West Alb. Middle Rio Grande",
     x = "Time Period",
     y = "Predicted Parasite Count",
     color = "Location"
   ) +
+  coord_cartesian(ylim = c(0, 0.05)) +
   theme_minimal(base_size = 14) +
   theme(
     axis.title = element_text(face = "bold"),
@@ -343,25 +381,33 @@ predict_S +
     strip.text.x = element_text(face = "bold", size = 14)
   )
 #CONDENSED MODEL
+predict_4$x_num <- as.numeric(predict_4$x)
+set.seed(50)
 ggplot(predict_4, aes(x = x, y = predicted, color = group)) +
-  geom_jitter(width = 0.15, height = 0, size = 5) +
-  geom_line(aes(group = group), linewidth = 1) +
+  geom_point(size=5)+
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  geom_line(aes(group = group), linewidth = 1) +
   scale_color_manual(
-    values = c("above"  = "blue", "below"= "orange", "within" = "darkgreen")
+    values = c("above"  = "blue", "below" = "orange", "within" = "darkgreen")
   ) +
   labs(
-    title  = "Sandoval",
+    title = "Sandoval",
     x = "Time Period",
     y = "Predicted Parasite Count",
     color = "Location"
   ) +
+  coord_cartesian(ylim = c(0, 0.2)) +
   theme_minimal(base_size = 14) +
   theme(
     axis.title = element_text(face = "bold"),
     legend.position = "right"
   )
 
+predict_4$x_jittered <- predict_4$x_num + runif(nrow(predict_4), -0.15, 0.15)
+scale_x_continuous(
+  breaks = 1:3,
+  labels = levels(predict_4$x)
+)
 # the emmeans measures whether your highest order relationships are significant or not (interaction itself, not the factors of the interaction)
 emm <- emmeans(S_model, ~ sandoval_locale*before_after_sandoval)
 joint_tests(S_model) # idk what to make of this output at the moment
