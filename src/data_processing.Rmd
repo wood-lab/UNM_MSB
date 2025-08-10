@@ -1,6 +1,6 @@
 ---
 title: "Processing Data from Raw to Analyzable Form"
-author: "Chelsea Wood, Gabby Commisso"
+author: "Chelsea Wood, Gabby Commisso, Connor Whalen"
 date: "June-August 2025"
 output:
   html_document:
@@ -425,3 +425,195 @@ write.csv(gamaff_processed_data_longer, file= "Gambusia_affinis_processed_machin
 write.csv(gamaff_processed_data, file="Gambusia_affinis_processed_human_readable_2025.08.01.csv")
 ```
 
+# PIMPRO (*Pimephales promelas*)
+
+Download most recent file
+```{r pimpro_dataset}
+pimpro_today<-read.csv(here("data", "PIMPRO Data - Sheet1.csv"))
+length(pimpro_today$CatalogNumber)
+```
+
+Now merge dissection data with meta-data (all.x makes sure that you keep all individual fish from the same lot, even though they have the same catalog number).
+
+```{r pimpro_merge}
+pimpro_with_metadata<-merge(pimpro_today, meta_data, by.x = "CatalogNumber", by.y = "CatalogNumber", all.x = TRUE)
+length(pimpro_with_metadata$CatalogNumber)
+```
+Let's make this dataset tidy! Making headers consistent, removing unnecessary columns, etc
+```{r tidy_pimpro}
+pimpro_with_metadata <- pimpro_with_metadata %>% 
+  janitor::clean_names()
+View(pimpro_with_metadata)
+
+#pimpro_with_metadata_tidy <- pimpro_with_metadata %>% 
+ # select(-c(73:132))
+
+#hybama_with_metadata_tidy <- hybama_with_metadata_tidy %>% 
+# select (-c(fish_species_1, fish_barcode_1, msb_fish_catalog_number, tissues, island, island_group, verbatim_elevation, lat_long_comments))
+
+#view(pimpro_with_metadata_tidy)
+```
+
+Plot to see where the dissected fish fall.
+```{r pimpro_test}
+plot(jitter(pimpro_with_metadata$latitude,30)~jitter(pimpro_with_metadata$year_collected,5))+abline(a = 35.211106, b = 0, lty = 2)+abline(v = 1953, lty = 2)
+
+str(pimpro_with_metadata)
+
+pimpro_headers<-ls(pimpro_with_metadata)
+pimpro_headers<-as.factor(pimpro_headers)
+```
+
+## Add parasites across organs and double what needs to be doubled.
+Notes:
+- cyst.unk is NOT a parasite
+- trem.unk IS a parasite, since even though it is unidentified, it was at least recognized as a trematode
+- nem.sty is not a parasite: determined to be free-living 
+- cest.four is not a parasite
+- after conferring with Irvin and seeing multiple specimens, I believe cest.a and cest.botsp are the same parasite, and a is just a more mature form. I have combined them in the below code
+```{r pimpro_parasites}
+crus.d <- pimpro_with_metadata$crus_d_skin + 2*(pimpro_with_metadata$crus_d_gill)
+
+crus.lersp <- pimpro_with_metadata$crus_lersp_flush
+
+mono.gyrof <- pimpro_with_metadata$mono_gyro_analfin + pimpro_with_metadata$mono_gyro_dorsalfin
+
+mono.gyrog <- pimpro_with_metadata$mono_gyro_gill
+
+mono.salsp <- 2*(pimpro_with_metadata$mono_salsp_gill)
+
+mono.ss <- 2*(pimpro_with_metadata$mono_ss_gills)
+
+trem.dips <- 2*(pimpro_with_metadata$trem_dips_eye) + pimpro_with_metadata$trem_dips_connective_tissue + pimpro_with_metadata$trem_dips_flush
+
+trem.iz <- pimpro_with_metadata$trem_iz_intestine
+
+trem.unk <- pimpro_with_metadata$trem_unk_gill
+
+nem.larv <- pimpro_with_metadata$nem_larv_connectivetissue + pimpro_with_metadata$nema_larv_intestine
+
+nem.l <- pimpro_with_metadata$nema_l_connective_tissue
+
+nem.myst <- pimpro_with_metadata$nema_myst_intestine
+
+nem.sc <- pimpro_with_metadata$nema_sc_intestine
+
+nem.unk <- pimpro_with_metadata$nema_unk_intestine
+
+acanth.spk <- pimpro_with_metadata$acanth_spk_flush
+
+cest.botsp <- pimpro_with_metadata$cest_a_intestine + pimpro_with_metadata$cest_botsp_intestine
+
+myxo.myxid <- pimpro_with_metadata$myxo_mxyid_gallbladder_presence1_absence0
+
+myxo.g <- 2*(pimpro_with_metadata$myxo_g_gill)
+
+prot.cil <- pimpro_with_metadata$prot_cil_gill_presence_absence
+```
+
+Quickly evaluating relationship between total length and weight to check for any potential abnormalities.
+```{r pimpro_weight_check}
+ggplot(pimpro_with_metadata,aes(total_length_mm,weight_mg))+
+  geom_point(size=4)
+```
+Looks good!
+
+## Putting it all together
+
+Put the columns into one dataframe...
+```{r pimpro_all_together_now}
+pimpro_processed_data<-cbind.data.frame(
+  pimpro_with_metadata$catalog_number,
+  pimpro_with_metadata$year_fish_collected,        
+  pimpro_with_metadata$month_collected, 
+  pimpro_with_metadata$day_fish_collected,         
+  pimpro_with_metadata$individual_id,
+  pimpro_with_metadata$fish_barcode,
+  pimpro_with_metadata$dissector,
+  pimpro_with_metadata$examiner, 
+  pimpro_with_metadata$dissection_date, 
+  pimpro_with_metadata$sex, 
+  pimpro_with_metadata$total_length_mm, 
+  pimpro_with_metadata$standard_length_mm,
+  pimpro_with_metadata$weight_mg, 
+  pimpro_with_metadata$ci, 
+  pimpro_with_metadata$combo, 
+  pimpro_with_metadata$latitude, 
+  pimpro_with_metadata$longitude, 
+  crus.d, 
+  crus.lersp, 
+  mono.gyrof,
+  mono.salsp, 
+  mono.ss,
+  trem.dips, 
+  trem.iz, 
+  trem.unk, 
+  nem.larv, 
+  nem.l, 
+  nem.myst,
+  acanth.spk, 
+  cest.botsp, 
+  myxo.myxid, 
+  myxo.g)
+```
+
+
+Name the columns...
+```{r pimpro_columns}
+colnames(pimpro_processed_data)[1]<-"CatalogNumber"
+colnames(pimpro_processed_data)[2]<-"YearCollected"
+colnames(pimpro_processed_data)[3]<-"MonthCollected"
+colnames(pimpro_processed_data)[4]<-"DayCollected"
+colnames(pimpro_processed_data)[5]<-"IndividualFishID"
+colnames(pimpro_processed_data)[6] <- "FishBarcode"
+colnames(pimpro_processed_data)[7]<-"Dissector"
+colnames(pimpro_processed_data)[8] <- "Examiner"
+colnames(pimpro_processed_data)[9]<-"DissectionDate"
+colnames(pimpro_processed_data)[10]<-"Sex"
+colnames(pimpro_processed_data)[11]<-"TotalLength_mm"
+colnames(pimpro_processed_data)[12]<-"StandardLength_mm"
+colnames(pimpro_processed_data)[13]<-"Weight_mg"
+colnames(pimpro_processed_data)[14]<-"CI"
+colnames(pimpro_processed_data)[15]<-"combo"
+colnames(pimpro_processed_data)[16]<-"Latitude"
+colnames(pimpro_processed_data)[17]<-"Longitude"
+
+view(pimpro_processed_data)
+```
+
+## Make the dataset analyzable
+
+```{r pimpro_analyzable}
+pimpro_processed_data_longer<-melt(pimpro_processed_data,id=c(
+  "CatalogNumber", 
+  "YearCollected", 
+  "MonthCollected", 
+  "DayCollected", 
+  "IndividualFishID", 
+  "FishBarcode", 
+  "Dissector",
+  "Examiner", 
+  "DissectionDate", 
+  "Sex", 
+  "TotalLength_mm", 
+  "StandardLength_mm",
+  "Weight_mg",
+  "CI","combo",
+  "Latitude",
+  "Longitude"))
+
+colnames(pimpro_processed_data_longer)[18]<-"psite_spp"
+colnames(pimpro_processed_data_longer)[19]<-"psite_count"
+
+# Fix data type for weight. Otherwise, it is read as a character and weight is plotted wrong.
+
+pimpro_processed_data_longer$Weight_mg <- as.numeric(pimpro_processed_data_longer$Weight_mg)
+```
+
+## Export both sheets
+
+```{r pimpro_export}
+write.csv(pimpro_processed_data_longer, file= "Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
+
+write.csv(pimpro_processed_data, file="Gambusia_affinis_processed_human_readable_2025.08.01.csv")
+```
