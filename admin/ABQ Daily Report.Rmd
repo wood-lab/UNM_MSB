@@ -310,7 +310,7 @@ Discovered a lot (MSB:Fish:6300) where there are not 5 fish that fit the latitud
 
 Download latest file 
 ```{r}
-pim_pro_today<-read.csv(here("data", "PIMPRO Data_2025.08.05.csv"))
+pim_pro_today<-read.csv(here("data", "PIMPRO Data - Sheet1.csv"))
                         
 length(pim_pro_today$CatalogNumber)
 ```
