@@ -117,6 +117,58 @@ thing <- minus_myxos %>%
 View(thing)
 
 
+# Add in number of hosts
+
+minus_myxos$n_hosts<-vector("character",length(minus_myxos$CatalogNumber))
+
+for(i in 1:length(minus_myxos$CatalogNumber)) {
+  
+  if(grepl("mono", minus_myxos$psite_spp[i])){
+    minus_myxos$n_hosts[i] <- "1"
+    
+  } else {
+    
+    if(grepl("cope", minus_myxos$psite_spp[i])){
+      minus_myxos$n_hosts[i] <- "1"
+      
+    } else {
+      
+      if(grepl("crus", minus_myxos$psite_spp[i])){
+        minus_myxos$n_hosts[i] <- "1"
+        
+      } else {
+        
+        if(grepl("nem", minus_myxos$psite_spp[i])){
+          minus_myxos$n_hosts[i] <- "2"
+          
+        } else {
+          
+          if(grepl("ces", minus_myxos$psite_spp[i])){
+            minus_myxos$n_hosts[i] <- "2"
+            
+          } else {
+            
+            if(grepl("trem", minus_myxos$psite_spp[i])){
+              minus_myxos$n_hosts[i] <- "3"
+              
+            } else {
+              
+              if(grepl("acan", minus_myxos$psite_spp[i])){
+                minus_myxos$n_hosts[i] <- "2"
+                
+              } else {
+                
+                minus_myxos$n_hosts[i] <- "NA"
+              }
+            }
+          }}}}}}
+
+thing <- minus_myxos %>%
+  group_by(psite_taxon, psite_spp, n_hosts) %>%
+  summarise(n = n())
+View(thing)
+
+
 # Messing around with models
 
 (offset(log(TotalLength_mm)))
@@ -160,11 +212,16 @@ model_draft_2<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*LH_strat
                         data=minus_myxos,family="nbinom")
 summary(model_draft_2)
 
+str(minus_myxos)
+
+model_draft_3<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*n_hosts+scale(Latitude)+
+                          (scale(YearCollected)|fish_spp/psite_spp)+(scale(TotalLength_mm)|fish_spp/psite_spp)
+                        +(1|CatalogNumber),
+                        data=minus_myxos,family="nbinom")
+summary(model_draft_3)
 
 
-
-
-big_predictions<-ggeffect(model_draft_1,c("YearCollected","CI","LH_strategy"))
+big_predictions<-ggeffect(model_draft_2,c("YearCollected","CI","LH_strategy"))
 str(big_predictions)
 
 diverging_pal <- c("#5ab4ac","#d8b365")
@@ -190,3 +247,92 @@ big_plot<-ggplot(big_predictions,aes(x,predicted),group=group,color=group)+
         legend.text = element_text(size=20))
 big_plot
 
+
+
+random_effects<-ranef(model_draft_2)
+random_effects<-random_effects$`psite_spp:fish_spp`
+random_effects<-as.data.frame(random_effects)
+random_effects$n_hosts<-c(2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3)
+random_effects$fish_spp<-c("GAMAFF","GAMAFF","HYBAMA","HYBAMA","GAMAFF","GAMAFF","HYBAMA","HYBAMA","GAMAFF","GAMAFF",
+                           "GAMAFF","HYBAMA","GAMAFF","GAMAFF","GAMAFF","HYBAMA","HYBAMA","HYBAMA","HYBAMA","GAMAFF",
+                           "HYBAMA","HYBAMA","HYBAMA","HYBAMA","GAMAFF","HYBAMA","HYBAMA","HYBAMA","GAMAFF")
+
+random_effects$psite_code<-rownames(random_effects)
+colnames(random_effects)[1]<-"intercept"
+colnames(random_effects)[2]<-"slope"
+
+
+# Put everything in order so you don't have to do it manually later on
+
+final_data_ordered <- random_effects %>%
+  arrange(psite_code) %>%
+  arrange(factor(n_hosts, levels = c("1","2","3")))
+
+
+# Get your colors
+
+library(wesanderson)
+pal<-wes_palette(name="Zissou1",10,type="continuous")
+cols <- wes_palette(10, name = "Zissou1",type="continuous")[c(1,4,7)]
+
+
+# Organized by number of hosts
+
+indiv_psites_plot<-ggplot(final_data_ordered,aes(x=slope,y=psite_code,label=n_hosts))+
+  geom_rect(xmin=-2.09,xmax=2.09,ymin=20.5,ymax=29.6,fill="#E4B80E",alpha=0.05)+
+  geom_rect(xmin=-2.09,xmax=2.09,ymin=13.5,ymax=20.5,fill="#9EBE91",alpha=0.05)+
+  geom_rect(xmin=-2.09,xmax=2.09,ymin=0.4,ymax=13.5,fill="#3B9AB2",alpha=0.05)+
+  geom_point()+
+  #geom_errorbar(aes(xmin=Estimate-Std..Error,xmax=Estimate+Std..Error))+
+  geom_vline(xintercept = 0,lty=1)+
+  #geom_hline(yintercept = 65.5,lty=3,lwd=0.25)+
+  #geom_hline(yintercept = 44.5,lty=3,lwd=0.25)+
+  xlab("random effect of year")+
+  ylab("parasite code")+
+  xlim(-1.9,1.9)+
+  scale_y_discrete(limits=rev(final_data_ordered$psite_code))+
+  #geom_text(x=-2,angle=0,hjust=0,vjust=0.5)+
+  #annotate("text",label=c("Copepoda","Hirudinea","Monogenea","Trematoda","Cestoda","Nematoda","Acanthocephala"),
+  #         x=,y=(final_data_ordered$order+1.35),hjust=0.5,vjust=0.5,size=3)+
+  annotate("text",label=c("1 host","2 hosts","3+ hosts"),x=-1.8,y=c(25,17,7),size=5,hjust = 0.5)+
+  theme_classic()+
+  theme(plot.margin = unit(c(1,1,1,1), "lines"),panel.grid.major.y = element_line(color="darkgray"),
+        axis.text.y = element_text(size=7), axis.title = element_text(size = 18))+
+  coord_cartesian(clip="off")
+
+indiv_psites_plot
+
+
+
+# Put everything in order so you don't have to do it manually later on
+
+final_data_ordered <- random_effects %>%
+  arrange(psite_code) %>%
+  arrange(fish_spp)
+
+# Organized by number of hosts
+
+fish_spp_plot<-ggplot(final_data_ordered,aes(x=slope,y=psite_code,label=fish_spp))+
+  geom_rect(xmin=-2.09,xmax=2.09,ymin=16.5,ymax=29.6,fill="#E4B80E",alpha=0.05)+
+  #geom_rect(xmin=-2.09,xmax=2.09,ymin=13.5,ymax=20.5,fill="#9EBE91",alpha=0.05)+
+  geom_rect(xmin=-2.09,xmax=2.09,ymin=0.4,ymax=16.5,fill="#3B9AB2",alpha=0.05)+
+  geom_point()+
+  #geom_errorbar(aes(xmin=Estimate-Std..Error,xmax=Estimate+Std..Error))+
+  geom_vline(xintercept = 0,lty=1)+
+  #geom_hline(yintercept = 65.5,lty=3,lwd=0.25)+
+  #geom_hline(yintercept = 44.5,lty=3,lwd=0.25)+
+  xlab("random effect of year")+
+  ylab("parasite code")+
+  xlim(-1.9,1.9)+
+  scale_y_discrete(limits=rev(final_data_ordered$psite_code))+
+  #geom_text(x=-2,angle=0,hjust=0,vjust=0.5)+
+  #annotate("text",label=c("Copepoda","Hirudinea","Monogenea","Trematoda","Cestoda","Nematoda","Acanthocephala"),
+  #         x=,y=(final_data_ordered$order+1.35),hjust=0.5,vjust=0.5,size=3)+
+  annotate("text",label=c(expression(italic("Gambusia affinis")),expression(italic("Hybognathus amarus"))),
+                          x=1.5,y=c(23,8),size=5,hjust = 0.5)+
+  theme_classic()+
+  theme(plot.margin = unit(c(1,1,1,1), "lines"),panel.grid.major.y = element_line(color="darkgray"),
+        axis.text.y = element_text(size=7), axis.title = element_text(size = 18))+
+  coord_cartesian(clip="off")
+
+fish_spp_plot
