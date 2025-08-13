@@ -221,7 +221,7 @@ model_draft_3<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*n_hosts+
 summary(model_draft_3)
 
 
-big_predictions<-ggeffect(model_draft_2,c("YearCollected","CI","LH_strategy"))
+big_predictions<-ggeffect(model_draft_3,c("YearCollected","CI","n_hosts"))
 str(big_predictions)
 
 diverging_pal <- c("#5ab4ac","#d8b365")
@@ -249,7 +249,7 @@ big_plot
 
 
 
-random_effects<-ranef(model_draft_2)
+random_effects<-ranef(model_draft_3)
 random_effects<-random_effects$`psite_spp:fish_spp`
 random_effects<-as.data.frame(random_effects)
 random_effects$n_hosts<-c(2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3)
