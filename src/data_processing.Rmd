@@ -429,7 +429,7 @@ write.csv(gamaff_processed_data, file="Gambusia_affinis_processed_human_readable
 
 Download most recent file
 ```{r pimpro_dataset}
-pimpro_today<-read.csv(here("data", "PIMPRO Data - Sheet1.csv"))
+pimpro_today<-read.csv(here("data", "PIMPRO Data_08.12.2025.csv"))
 length(pimpro_today$CatalogNumber)
 ```
 
@@ -445,13 +445,6 @@ pimpro_with_metadata <- pimpro_with_metadata %>%
   janitor::clean_names()
 View(pimpro_with_metadata)
 
-#pimpro_with_metadata_tidy <- pimpro_with_metadata %>% 
- # select(-c(73:132))
-
-#hybama_with_metadata_tidy <- hybama_with_metadata_tidy %>% 
-# select (-c(fish_species_1, fish_barcode_1, msb_fish_catalog_number, tissues, island, island_group, verbatim_elevation, lat_long_comments))
-
-#view(pimpro_with_metadata_tidy)
 ```
 
 Plot to see where the dissected fish fall.
@@ -462,61 +455,72 @@ str(pimpro_with_metadata)
 
 pimpro_headers<-ls(pimpro_with_metadata)
 pimpro_headers<-as.factor(pimpro_headers)
+colnames(unique(pimpro_with_metadata))
+
 ```
 
 ## Add parasites across organs and double what needs to be doubled.
 Notes:
-- cyst.unk is NOT a parasite
-- trem.unk IS a parasite, since even though it is unidentified, it was at least recognized as a trematode
-- nem.sty is not a parasite: determined to be free-living 
-- cest.four is not a parasite
-- after conferring with Irvin and seeing multiple specimens, I believe cest.a and cest.botsp are the same parasite, and a is just a more mature form. I have combined them in the below code
+- unk_caudalfin may be a parasite but we don't know what, so we are dropping it 
+- cyst_unkn_stomach may be a parasite but we don't know what, so we are dropping it 
+_ cyst_unkn_intestine may be a parasite but we don't know what, so we are dropping it 
+- unk_gallbladder_presence_absence may be a parasite but we don't know what, so we are dropping it
 ```{r pimpro_parasites}
-crus.d <- pimpro_with_metadata$crus_d_skin + 2*(pimpro_with_metadata$crus_d_gill)
+trem.meta <- pimpro_with_metadata$trem_meta_skin + pimpro_with_metadata$trem_meta_muscle
 
-crus.lersp <- pimpro_with_metadata$crus_lersp_flush
+crus.lercyp <- pimpro_with_metadata$crus_lercyp_skin + pimpro_with_metadata$crus_fin_dorsalfin + pimpro_with_metadata$crus_lercyp_pelvicfin
 
-mono.gyrof <- pimpro_with_metadata$mono_gyro_analfin + pimpro_with_metadata$mono_gyro_dorsalfin
+trem.diphur <- pimpro_with_metadata$trem_diphur_muscle + pimpro_with_metadata$trem_diphur_liver + pimpro_with_metadata$trem_diphur_connective_tissue + pimpro_with_metadata$trem_diphur_flush + pimpro_with_metadata$trem_diphur_intestine
 
-mono.gyrog <- pimpro_with_metadata$mono_gyro_gill
+trem.n <- pimpro_with_metadata$trem_n_body_cavity + pimpro_with_metadata$trem_n_connectivetissue 
 
-mono.salsp <- 2*(pimpro_with_metadata$mono_salsp_gill)
+mono.gyrsp <- pimpro_with_metadata$mono_gyrsp_dorsalfin + 2*(pimpro_with_metadata$mono_gyrsp_gill) + pimpro_with_metadata$mono_gyrsp_pelvicfin + 2*(pimpro_with_metadata$mono_gyrsp_pectoralfin)
 
-mono.ss <- 2*(pimpro_with_metadata$mono_ss_gills)
+mono.unk <- 2*(pimpro_with_metadata$mono_unkn_pectoralfin)
 
-trem.dips <- 2*(pimpro_with_metadata$trem_dips_eye) + pimpro_with_metadata$trem_dips_connective_tissue + pimpro_with_metadata$trem_dips_flush
+trem.white <- pimpro_with_metadata$trem_white_liver + pimpro_with_metadata$trem_white_conn
 
-trem.iz <- pimpro_with_metadata$trem_iz_intestine
+trem.p <- pimpro_with_metadata$trem_p_liver + pimpro_with_metadata$trem_p_connective_tissue + pimpro_with_metadata$trem_p_flush + pimpro_with_metadata$trem_p_kidney
 
-trem.unk <- pimpro_with_metadata$trem_unk_gill
+trem.neasp <- 2*(pimpro_with_metadata$trem_neasp_eye)
 
-nem.larv <- pimpro_with_metadata$nem_larv_connectivetissue + pimpro_with_metadata$nema_larv_intestine
+trem.unk <- pimpro_with_metadata$trem_unk_connectivetissue + pimpro_with_metadata$trem_unk_flush
 
-nem.l <- pimpro_with_metadata$nema_l_connective_tissue
+trem.acet <- pimpro_with_metadata$trem_acet_connectivetissue
 
-nem.myst <- pimpro_with_metadata$nema_myst_intestine
+trem.unclear <- pimpro_with_metadata$trem_unclear_conn
 
-nem.sc <- pimpro_with_metadata$nema_sc_intestine
+cest.larv <- pimpro_with_metadata$cest_larv_connective_tissue
 
-nem.unk <- pimpro_with_metadata$nema_unk_intestine
+nem.cont <- pimpro_with_metadata$nem_cont_connectivetissue + pimpro_with_metadata$nem_cont_intestine
 
-acanth.spk <- pimpro_with_metadata$acanth_spk_flush
+trem.cent <- pimpro_with_metadata$trem_cent_flush + pimpro_with_metadata$trem_cent_intestine + pimpro_with_metadata$trem_acet_connectivetissue
 
-cest.botsp <- pimpro_with_metadata$cest_a_intestine + pimpro_with_metadata$cest_botsp_intestine
+nem.cap <- pimpro_with_metadata$nem_cap_intestine
 
-myxo.myxid <- pimpro_with_metadata$myxo_mxyid_gallbladder_presence1_absence0
+cest.b <- pimpro_with_metadata$cest_b_intestine
 
-myxo.g <- 2*(pimpro_with_metadata$myxo_g_gill)
+trem.buc <- pimpro_with_metadata$trem_buc_intestine
 
-prot.cil <- pimpro_with_metadata$prot_cil_gill_presence_absence
+nem.unk <- pimpro_with_metadata$nem_unk_intestine
+
+nem.larv <- pimpro_with_metadata$nem_larv_intestine + pimpro_with_metadata$nem_larv_gallbladder
+
+myxo.myxsp <- pimpro_with_metadata$myxo_myxsp_gill_number_of_clusters
+
+myxo.m <- 2*(pimpro_with_metadata$myxo_m_gill)
+
+mono.dacsp <- 2*(pimpro_with_metadata$mono_dacsp_gill)
+
 ```
 
 Quickly evaluating relationship between total length and weight to check for any potential abnormalities.
 ```{r pimpro_weight_check}
 ggplot(pimpro_with_metadata,aes(total_length_mm,weight_mg))+
   geom_point(size=4)
+
 ```
-Looks good!
+
 
 ## Putting it all together
 
@@ -540,21 +544,30 @@ pimpro_processed_data<-cbind.data.frame(
   pimpro_with_metadata$combo, 
   pimpro_with_metadata$latitude, 
   pimpro_with_metadata$longitude, 
-  crus.d, 
-  crus.lersp, 
-  mono.gyrof,
-  mono.salsp, 
-  mono.ss,
-  trem.dips, 
-  trem.iz, 
-  trem.unk, 
-  nem.larv, 
-  nem.l, 
-  nem.myst,
-  acanth.spk, 
-  cest.botsp, 
-  myxo.myxid, 
-  myxo.g)
+  trem.meta,
+  crus.lercyp,
+  trem.diphur,
+  trem.n,
+  mono.gyrsp,
+  mono.unk,
+  trem.white,
+  trem.p,
+  trem.neasp,
+  trem.unk,
+  trem.acet, 
+  trem.unclear,
+  cest.larv,
+  nem.cont,
+  trem.cent,
+  nem.cap,
+  cest.b,
+  trem.buc,
+  nem.unk,
+  nem.larv,
+  myxo.myxsp,
+  myxo.m,
+  mono.dacsp
+  )
 ```
 
 
@@ -613,7 +626,16 @@ pimpro_processed_data_longer$Weight_mg <- as.numeric(pimpro_processed_data_longe
 ## Export both sheets
 
 ```{r pimpro_export}
-write.csv(pimpro_processed_data_longer, file= "Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
+write.csv(pimpro_processed_data_longer, file= "Pimephales_promelas_processed_machine_readable_2025.08.12.csv")
 
-write.csv(pimpro_processed_data, file="Gambusia_affinis_processed_human_readable_2025.08.01.csv")
+write.csv(pimpro_processed_data, file="Pimephales_promelas_processed_human_readable_2025.08.12.csv")
+getwd()
 ```
+
+## Merge all data into one file
+```{r}
+all.fish <- pimpro_processed_data %>%
+  full_join(gamaff_processed_data, by = "CatalogNumber") %>%
+  full_join(hybama_processed_data, by = "CatalogNumber")
+```
+

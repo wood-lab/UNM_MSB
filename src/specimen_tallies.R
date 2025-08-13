@@ -584,3 +584,12 @@ control_1971to1980 <- pim_pro[ sample( which( pim_pro$combo == "control_1971-198
 impact_1931to1940 <- pim_pro[ sample( which( pim_pro$combo == "impact_1931-1940")), ]
 # not enough lots to replace, dissect anyway (and ignore new size rule)
 # only 5 fish are bigger than 30, one of those 5 is the biggest fish, so we are going to dissect just 4 of them 
+
+
+# Replace PIMPRO MSB:Fish:68516 (smaller than the new 50 mm rule)
+control_1981to1990 <- pim_pro[ sample( which( pim_pro$combo == "control_1981-1990")), ]
+# can replace with 7791
+
+# Replace PIMPRO MSB:Fish:3996 (smaller than the new 50 mm rule)
+impact_1971to1980 <- pim_pro[ sample( which( pim_pro$combo == "impact_1971-1980")), ]
+# can replace with 4380 OR 4425
