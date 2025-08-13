@@ -571,3 +571,25 @@ impact_1941to1950 <- gam_aff[ sample( which( gam_aff$combo == "impact_1941-1950"
 # No replacements in the same decade category! Jar collected in 1949, so will attempt to select from the next decade combo
 impact_1951to1960 <- gam_aff[ sample( which( gam_aff$combo == "impact_1951-1960"), 1, replace = F), ]
 # Somehow only one single jar falls under "impact_1951-1960" and we already dissected it...
+
+# Replace PIMPRO MSB:Fish:4781 (smaller than the new 50 mm rule)
+control_1971to1980 <- pim_pro[ sample( which( pim_pro$combo == "control_1971-1980")), ]
+# not enough lots to replace, dissect anyway (and ignore new size rule)
+
+# Replace PIMPRO MSB:Fish:5007 (smaller than the new 50 mm rule)
+control_1971to1980 <- pim_pro[ sample( which( pim_pro$combo == "control_1971-1980")), ]
+# not enough lots to replace, dissect anyway (and ignore new size rule)
+
+# Replace PIMPRO MSB:Fish:646 (smaller than the new 50 mm rule)
+impact_1931to1940 <- pim_pro[ sample( which( pim_pro$combo == "impact_1931-1940")), ]
+# not enough lots to replace, dissect anyway (and ignore new size rule)
+# only 5 fish are bigger than 30, one of those 5 is the biggest fish, so we are going to dissect just 4 of them 
+
+
+# Replace PIMPRO MSB:Fish:68516 (smaller than the new 50 mm rule)
+control_1981to1990 <- pim_pro[ sample( which( pim_pro$combo == "control_1981-1990")), ]
+# can replace with 7791
+
+# Replace PIMPRO MSB:Fish:3996 (smaller than the new 50 mm rule)
+impact_1971to1980 <- pim_pro[ sample( which( pim_pro$combo == "impact_1971-1980")), ]
+# can replace with 4380 OR 4425

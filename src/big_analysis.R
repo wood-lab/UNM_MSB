@@ -19,10 +19,18 @@ library(MASS)
 
 hyb_ama_data<-read.csv("data/processed/Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
 gam_aff_data<-read.csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
+pim_pro_data<-read.csv("data/processed/Pimephales_promelas_processed_machine_readable_2025.08.12.csv")
 hyb_ama_data$fish_spp<-"Hybognathus amarus"
 gam_aff_data$fish_spp<-"Gambusia affinis"
+pim_pro_data$fish_spp<-"Pimephales promelas"
+all_data <- rbind(hyb_ama_data,gam_aff_data,pim_pro_data)
 
-all_data <- rbind(hyb_ama_data,gam_aff_data)
+
+# Quick tallies
+
+length(unique(all_data$IndividualFishID))
+length(unique(all_data$psite_spp))
+sum(as.numeric(all_data$psite_count),na.rm=T)
 
 
 # Trim out all the myxos
