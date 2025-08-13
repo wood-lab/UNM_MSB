@@ -18,12 +18,14 @@ HYBAMA_data<-HYBAMA_data %>%
 
 HYBAMA_data$Sex <- ifelse(HYBAMA_data$Sex == TRUE, "M",
                   ifelse(HYBAMA_data$Sex == FALSE, "F", NA))
-
 GAMAFF_data<- read_csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.08.01.csv")%>% 
   mutate(fish_species="gambusia affinis") %>% 
   mutate(combo_fish_parasite=paste(fish_species,psite_spp,sep="_"))
+PIMPRO_data<- read_csv("data/processed/Pimephales_promelas_processed_machine_readable_2025.08.12.csv") %>% 
+  mutate(fish_species="pimephales promelas") %>% 
+  mutate(combo_fish_parasite=paste(fish_species,psite_spp,sep="_"))
 
-fish_data<- bind_rows(HYBAMA_data,GAMAFF_data,)
+fish_data<- bind_rows(HYBAMA_data,GAMAFF_data,PIMPRO_data)
 levee_data<- read.csv("reu/bradyn/al_midrio_R_data.csv")
 #Setting Cochiti dam bounds and dates
 cochiti_dam<-fish_data %>% 
@@ -106,14 +108,14 @@ before_ab_amrg_elevee <- ab_amrg_elevee %>%
     YearCollected<1951 & YearCollected>=1931 ~"before",
     TRUE ~ "no_intervention"
   ))
-#Summing parasite counts
+#Summing unique pasite counts
 before_ab_amrg_elevee$taxon_group <- dplyr::case_when(
-  before_ab_amrg_elevee$psite_spp %in% c("cope.imler", "cope.lern","crus.d","crus.lersp") ~ "copepoda",
-  before_ab_amrg_elevee$psite_spp %in% c("cest.botsp")~"cestoda",
-  before_ab_amrg_elevee$psite_spp %in% c("mono.dact","mono.gyro","mono.salsp","mono.ss","mono.gyrof")~"monogenea",
-  before_ab_amrg_elevee$psite_spp %in% c("myxo.b","myxo.g","myxo.myxid")~"myxozoan",
-  before_ab_amrg_elevee$psite_spp %in% c("nem.cl","nem.l","nem.larv","nem.myst","nem.unk")~"nematoda",
-  before_ab_amrg_elevee$psite_spp %in% c("trem.b","trem.d","trem.diplo","trem.dips","trem.dlum","trem.em","trem.fim","trem.gold","trem.iz","trem.l","trem.meta.unk","trem.ridge","trem.unk")~"trematoda",
+  before_ab_amrg_elevee$psite_spp %in% c("cope.imler", "cope.lern","crus.d","crus.lersp","crus.lercyp") ~ "copepoda",
+  before_ab_amrg_elevee$psite_spp %in% c("cest.botsp","cest.b","cest.larv")~"cestoda",
+  before_ab_amrg_elevee$psite_spp %in% c("mono.dact","mono.gyro","mono.salsp","mono.ss","mono.gyrof","mono.dacsp","mono.unk","mono.grysp")~"monogenea",
+  before_ab_amrg_elevee$psite_spp %in% c("myxo.b","myxo.g","myxo.myxid","myxo.m","myxo.myxsp")~"myxozoan",
+  before_ab_amrg_elevee$psite_spp %in% c("nem.cl","nem.l","nem.larv","nem.myst","nem.unk","nem.cap","nem.cont")~"nematoda",
+  before_ab_amrg_elevee$psite_spp %in% c("trem.b","trem.d","trem.diplo","trem.dips","trem.dlum","trem.em","trem.fim","trem.gold","trem.iz","trem.l","trem.meta.unk","trem.ridge","trem.unk","trem.buc","trem.cent","trem.unclear","trem.acet","trem.neasp","trem.p","trem.white","trem.n","trem.diphur","trem.meta")~"trematoda",
   before_ab_amrg_elevee$psite_spp %in% c("acanth.spk")~"acanthocephalan",
   TRUE ~ "NA"
 )
@@ -140,7 +142,7 @@ corrales_BACI$corrales_locale<-factor(corrales_BACI$corrales_locale,levels=
 )
 #Corrales Model
 model<-glmmTMB(
-  psite_count~ corrales_locale*before_after_corrales+(1|CatalogNumber)+(1|combo_fish_parasite)+(1|YearCollected),
+  psite_count~ corrales_locale*before_after_corrales+(1|CatalogNumber)+(1|combo_fish_parasite),
   family = nbinom2(),
   data= corrales_BACI,
   ziformula=~1
@@ -152,7 +154,7 @@ plot(parameters(model))
 predict_1 <- ggpredict(
   model,
   terms = c("before_after_corrales", "corrales_locale"),
-  bias_correction =TRUE
+  bias_correction = TRUE
 ) 
 #FULL CORRALES PLOT
 predict_C<-ggplot(data = predict_1, aes(x = x, y = predicted, group=group))+
