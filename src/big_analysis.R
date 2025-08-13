@@ -12,6 +12,7 @@ library(car)
 library(ggeffects)
 library(reshape2)
 library(MASS)
+library(dplyr)
 
 
 # R is really useful for doing quick tallies and plots.
@@ -34,7 +35,7 @@ sum(as.numeric(all_data$psite_count),na.rm=T)
 
 
 # Trim out all the myxos
-library(dplyr)
+
 minus_myxos <- all_data %>%
   filter(!grepl("myx", psite_spp))
 
@@ -177,9 +178,15 @@ thing <- minus_myxos %>%
 View(thing)
 
 
-# Messing around with models
+#### Messing around with models
+
+
+# I couldn't get models to converge with an offset term, but maybe that's okay? Putting it here for safekeeping.
 
 (offset(log(TotalLength_mm)))
+
+
+# Basic model with no interactions
 
 model_draft<-glmer.nb(as.numeric(psite_count)~CI+scale(YearCollected)+scale(Latitude)+scale(TotalLength_mm)+
                         (1|psite_spp)+(1|CatalogNumber),
@@ -187,7 +194,7 @@ model_draft<-glmer.nb(as.numeric(psite_count)~CI+scale(YearCollected)+scale(Lati
 summary(model_draft)
 
 
-# Parasite-taxon level
+# Parasite-taxon level inferences about change over time (no CI)
 
 model_draft<-glmer.nb(as.numeric(psite_count)~psite_taxon*scale(YearCollected)+scale(Latitude)+scale(TotalLength_mm)+
                         (1|psite_spp)+(1|CatalogNumber),
@@ -195,7 +202,7 @@ model_draft<-glmer.nb(as.numeric(psite_count)~psite_taxon*scale(YearCollected)+s
 summary(model_draft)
 
 
-# Test the big hyps
+# Test the big hyps - basic model with no test for how things differ among parasite types
 
 model_draft_1<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)+scale(Latitude)+scale(TotalLength_mm)+
                         (1|fish_spp/psite_spp)+(1|CatalogNumber),
@@ -203,8 +210,7 @@ model_draft_1<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)+scale(La
 summary(model_draft_1)
 
 
-
-# Three-way interaction
+# Test the big hyps - now accounting for differences between complex versus direct
 
 
 model_draft_1<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*LH_strategy+scale(Latitude)+scale(TotalLength_mm)+
@@ -213,14 +219,20 @@ model_draft_1<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*LH_strat
 summary(model_draft_1)
 
 
-# Then pull out the individual parasite trajectories and plot them as in the Puget Sound paper
+# Test the big hyps - now accounting for differences between complex versus direct PLUS adding a random effect
+# term to test whether different parasite species just have different baseline change through time
+
 
 model_draft_2<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*LH_strategy+scale(Latitude)+scale(TotalLength_mm)+
                           (scale(YearCollected)|fish_spp/psite_spp)+(1|CatalogNumber),
                         data=minus_myxos,family="nbinom")
 summary(model_draft_2)
 
-str(minus_myxos)
+
+# Test the big hyps - now accounting for differences among parasites with 1, 2, or 3 hosts PLUS adding a random effect
+# term to test whether different parasite species just have different baseline change through time PLUS allowing
+# each parasite taxon to have a different relationship with TL
+
 
 model_draft_3<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*n_hosts+scale(Latitude)+
                           (scale(YearCollected)|fish_spp/psite_spp)+(scale(TotalLength_mm)|fish_spp/psite_spp)
@@ -228,6 +240,8 @@ model_draft_3<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*n_hosts+
                         data=minus_myxos,family="nbinom")
 summary(model_draft_3)
 
+
+# Create a prediction plot
 
 big_predictions<-ggeffect(model_draft_3,c("YearCollected","CI","n_hosts"))
 str(big_predictions)
@@ -256,6 +270,7 @@ big_plot<-ggplot(big_predictions,aes(x,predicted),group=group,color=group)+
 big_plot
 
 
+# Then pull out the individual parasite trajectories and plot them as in the Puget Sound paper
 
 random_effects<-ranef(model_draft_3)
 random_effects<-random_effects$`psite_spp:fish_spp`
@@ -318,7 +333,8 @@ final_data_ordered <- random_effects %>%
   arrange(psite_code) %>%
   arrange(fish_spp)
 
-# Organized by number of hosts
+
+# Organized by host species
 
 fish_spp_plot<-ggplot(final_data_ordered,aes(x=slope,y=psite_code,label=fish_spp))+
   geom_rect(xmin=-2.09,xmax=2.09,ymin=16.5,ymax=29.6,fill="#E4B80E",alpha=0.05)+
