@@ -34,41 +34,59 @@ length(unique(all_data$psite_spp))
 sum(as.numeric(all_data$psite_count),na.rm=T)
 
 
+# Trim out parasites at <5% prevalence
+
+all_data$positive <- ifelse(all_data$psite_count > 0 , 1, 0)
+
+thing <- all_data %>%
+  group_by(fish_spp,psite_spp) %>%
+  summarise(pos = sum(as.numeric(positive),na.rm=T), count = length(positive))
+
+thing$prev <- thing$pos/thing$count
+view(thing)
+
+
 # Trim out all the myxos
 
 minus_myxos <- all_data %>%
   filter(!grepl("myx", psite_spp))
 
 
+# Keep only the parasites at >5% prevalence
+
+common_psites <- minus_myxos %>%
+  filter(grepl("mono.salsp|mono.ss|trem.dips|mono.dact|mono.gyro|trem.b|trem.d|trem.diplo|mono.dacsp|trem.diphur", psite_spp))
+
+
 # Add in life history strategy
 
-minus_myxos$LH_strategy<-vector("character",length(minus_myxos$CatalogNumber))
+common_psites$LH_strategy<-vector("character",length(common_psites$CatalogNumber))
 
-for(i in 1:length(minus_myxos$CatalogNumber)) {
+for(i in 1:length(common_psites$CatalogNumber)) {
   
-  if(grepl("mono", minus_myxos$psite_spp[i])){
-    minus_myxos$LH_strategy[i] <- "direct"
+  if(grepl("mono", common_psites$psite_spp[i])){
+    common_psites$LH_strategy[i] <- "direct"
     
   } else {
     
-    if(grepl("cope", minus_myxos$psite_spp[i])){
-      minus_myxos$LH_strategy[i] <- "direct"
+    if(grepl("cope", common_psites$psite_spp[i])){
+      common_psites$LH_strategy[i] <- "direct"
       
     } else {
       
-      if(grepl("crus", minus_myxos$psite_spp[i])){
-        minus_myxos$LH_strategy[i] <- "direct"
+      if(grepl("crus", common_psites$psite_spp[i])){
+        common_psites$LH_strategy[i] <- "direct"
         
       } else {
       
-      minus_myxos$LH_strategy[i] <- "complex"
+        common_psites$LH_strategy[i] <- "complex"
     }
     }
   }}
 
-minus_myxos$LH_strategy 
+common_psites$LH_strategy 
 
-thing <- minus_myxos %>%
+thing <- common_psites %>%
   group_by(LH_strategy, psite_spp) %>%
   summarise(n = n())
 View(thing)
@@ -234,16 +252,16 @@ summary(model_draft_2)
 # each parasite taxon to have a different relationship with TL
 
 
-model_draft_3<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*n_hosts+scale(Latitude)+
+model_draft_3<-glmer.nb(as.numeric(psite_count)~CI*scale(YearCollected)*LH_strategy+scale(Latitude)+
                           (scale(YearCollected)|fish_spp/psite_spp)+(scale(TotalLength_mm)|fish_spp/psite_spp)
                         +(1|CatalogNumber),
-                        data=minus_myxos,family="nbinom")
+                        data=common_psites,family="nbinom")
 summary(model_draft_3)
 
 
 # Create a prediction plot
 
-big_predictions<-ggeffect(model_draft_3,c("YearCollected","CI","n_hosts"))
+big_predictions<-ggeffect(model_draft_3,c("YearCollected","CI","LH_strategy"))
 str(big_predictions)
 
 diverging_pal <- c("#5ab4ac","#d8b365")
