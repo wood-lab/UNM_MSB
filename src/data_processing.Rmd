@@ -438,6 +438,13 @@ Now merge dissection data with meta-data (all.x makes sure that you keep all ind
 ```{r pimpro_merge}
 pimpro_with_metadata<-merge(pimpro_today, meta_data, by.x = "CatalogNumber", by.y = "CatalogNumber", all.x = TRUE)
 length(pimpro_with_metadata$CatalogNumber)
+
+# remove fishes collected in 2021 or 2022
+pimpro_with_metadata <- pimpro_with_metadata %>%
+  filter(year_fish_collected != "2021") %>%
+  filter(year_fish_collected != "2022") %>%
+  filter(year_fish_collected != "2025")
+View(pimpro_with_metadata)
 ```
 Let's make this dataset tidy! Making headers consistent, removing unnecessary columns, etc
 ```{r tidy_pimpro}
@@ -626,9 +633,9 @@ pimpro_processed_data_longer$Weight_mg <- as.numeric(pimpro_processed_data_longe
 ## Export both sheets
 
 ```{r pimpro_export}
-write.csv(pimpro_processed_data_longer, file= "Pimephales_promelas_processed_machine_readable_2025.08.12.csv")
+write.csv(pimpro_processed_data_longer, file= "Pimephales_promelas_processed_machine_readable_2025.08.14.csv")
 
-write.csv(pimpro_processed_data, file="Pimephales_promelas_processed_human_readable_2025.08.12.csv")
+write.csv(pimpro_processed_data, file="Pimephales_promelas_processed_human_readable_2025.08.14.csv")
 getwd()
 ```
 
