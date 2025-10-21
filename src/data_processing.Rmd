@@ -633,9 +633,9 @@ pimpro_processed_data_longer$Weight_mg <- as.numeric(pimpro_processed_data_longe
 ## Export both sheets
 
 ```{r pimpro_export}
-write.csv(pimpro_processed_data_longer, file= "Pimephales_promelas_processed_machine_readable_2025.08.14.csv")
+write.csv(pimpro_processed_data_longer, file= "Pimephales_promelas_processed_machine_readable_2025.10.21.csv")
 
-write.csv(pimpro_processed_data, file="Pimephales_promelas_processed_human_readable_2025.08.14.csv")
+write.csv(pimpro_processed_data, file="Pimephales_promelas_processed_human_readable_2025.10.21.csv")
 getwd()
 ```
 
@@ -644,5 +644,10 @@ getwd()
 all.fish <- pimpro_processed_data %>%
   full_join(gamaff_processed_data, by = "CatalogNumber") %>%
   full_join(hybama_processed_data, by = "CatalogNumber")
+View(all.fish)
+
+#export
+write.csv(all.fish, file="all_fish_processed_human_readable_2025.10.21.csv")
+getwd()
 ```
 
