@@ -269,6 +269,34 @@ sum(as.numeric(final_dataset$psite_count),na.rm=TRUE)
 
 
 
+# Start the MS with just a plot of the raw data: parasite counts, fish_spp as series, divided into control and impact.
+# This will show that the decline through time is visible with the naked eye, and driven primarily by HYBAMA.
+# It will also show that the story doesn't differ that much between control and impact, justifying the turn from
+# BA*CI to BA*fish_spp.
+
+plot(final_dataset$psite_count~final_dataset$YearCollected)
+
+control_only<-final_dataset %>%
+  filter(CI=="control")
+
+impact_only<-final_dataset %>%
+  filter(CI=="impact")
+
+plot(control_only$psite_count~control_only$YearCollected)
+
+plot(impact_only$psite_count~impact_only$YearCollected)
+
+View(final_dataset)
+
+# Weird that there are a handful of very late specimens that don't show up in control or impact...
+
+recents<-final_dataset %>%
+  filter(YearCollected>2010)
+View(recents)
+
+
+
+
 #### MODELS
 
 
@@ -405,6 +433,76 @@ big_plot
 # Okay, so it looks like only two species really possess the interaction, and only marginally. So having psite_spp
 # interact with CI*Year is not particularly helpful. Pare down the model accordingly.
 
+model_draft_6<-glmer.nb(psite_count~
+                          CI+YearCollected_sc*host_psite_combo+
+                          fish_spp:TotalLength_mm_sc+
+                          Latitude_within+
+                          (1|CatalogNumber_chr),
+                        data=final_dataset,
+                        family="nbinom",
+                        control = glmerControl(
+                          optimizer = "bobyqa",
+                          optCtrl = list(maxfun = 2e5)))
+
+summary(model_draft_6)
+
+
+big_predictions<-ggeffect(model_draft_6,c("YearCollected_sc","host_psite_combo"))
+str(big_predictions)
+
+diverging_pal <- c("#5ab4ac","#d8b365")
+darker_pal <- c("#018571","#a6611a")
+
+big_plot<-ggplot(big_predictions,aes(x,predicted),group=group,color=group)+
+  geom_ribbon(data=big_predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high,fill=group),alpha=0.5)+
+  geom_line(aes(group=group,color=group))+
+  #scale_color_manual(values=darker_pal)+
+  #scale_fill_manual(values=diverging_pal)+
+  #facet_grid(~facet)+
+  ylim(0,10)+
+  xlab("Year")+
+  ylab("predicted parasite abundance\n per parasite taxon per host individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(plot.title=element_text(size=24,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=16),strip.text.x = element_text(size = 20),
+        axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
+        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
+  #scale_x_discrete(limits=(rev(levels(big_predictions$x))))+
+  theme(legend.position="top",legend.title = element_blank(),
+        legend.text = element_text(size=20))
+big_plot
+
+
+# Okay, it looks like a few HYBAMA parasites have just collapsed in abundance. Can we just look at those raw data?
+
+
+# Then I think you want to look specifically into each of the HYBAMA parasites and what their temporal trajectory was.
+
+HYBAMA_MONO_DACT <- final_dataset %>%
+  filter(fish_spp == "Hybognathus amarus" & psite_spp == "mono.dact")
+
+plot(HYBAMA_MONO_DACT$psite_count~HYBAMA_MONO_DACT$YearCollected)
+
+# Not seen since 1960. Neat.
+
+HYBAMA_TREM.B <- final_dataset %>%
+  filter(fish_spp == "Hybognathus amarus" & psite_spp == "trem.b")
+
+plot(HYBAMA_TREM.B$psite_count~HYBAMA_TREM.B$YearCollected)
+
+
+HYBAMA_TREM.DIPLO <- final_dataset %>%
+  filter(fish_spp == "Hybognathus amarus" & psite_spp == "trem.diplo")
+
+plot(HYBAMA_TREM.DIPLO$psite_count~HYBAMA_TREM.DIPLO$YearCollected)
+
+
+# Still around, but lower abundance.
+
+
+
 model_draft_7<-glmer.nb(psite_count~
                           CI*YearCollected_sc*fish_spp+
                           host_psite_combo*TotalLength_mm_sc+
@@ -463,6 +561,30 @@ big_plot<-ggplot(big_predictions,aes(x,predicted,group=group))+
 big_plot
 
 
+# Show me what is happening with each individual parasite species, colored by fish species.
+
+big_plot<-ggplot(big_predictions,aes(x,predicted,group=group))+
+  #geom_ribbon(data=big_predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),alpha=0.5)+
+  geom_line(aes(group=group,color=group))+
+  #scale_color_manual(values=darker_pal)+
+  scale_fill_manual(values=diverging_pal)+
+  #facet_grid(~facet)+
+  #ylim(0,10)+
+  xlab("Year")+
+  ylab("predicted parasite abundance\n per parasite taxon per host individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(plot.title=element_text(size=24,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=16),strip.text.x = element_text(size = 20),
+        axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
+        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
+  #scale_x_discrete(limits=(rev(levels(big_predictions$x))))+
+  theme(legend.position="top",legend.title = element_blank(),
+        legend.text = element_text(size=20))
+big_plot
+
+
 # Okay, so I think the story here isn't about urbanization... there isn't a signal of BA*CI. Instead, the overriding
 # pattern is a decline in the parasites of HYBAMA - the only fish that has diminished in density across the study 
 # period. To differentiate this conclusion from that of Gabby's paper, I think that we need to bring in the fish 
@@ -472,25 +594,286 @@ big_plot
 # Steve Platania's Middle Rio Grande survey might work (1993 onward), but it loses a huge chunk of the dataset
 # (especially early years when HYBAMA parasites were much more abundant).
 
+fish_density<-read.csv("data/RGSM_Albuquerque_core_station_species_1993_2019.csv",header=T,sep=",")
+
+# Get an average density per year
+
+fish_data <- fish_density %>%
+  group_by(ReportingYear, Species) %>%
+  summarize(mean_density = mean(Density_per_100m2))
+
+fish_plot<-ggplot(fish_data,aes(ReportingYear,mean_density,group=Species))+
+  geom_point(aes(group=Species,color=Species))
+
+fish_model<-lm(mean_density~ReportingYear*Species, data=fish_data)
+summary(fish_model)
 
 
-# But I think fish species might be the most important factor here... Gambusia in particular looks really different
-# from the other two. How to account for that?
+# Now merge by year and fish species
+# Start by creating a variable that will allow you to merge across datasets
 
-model_draft_6<-glmer.nb(psite_count~
-                          CI*YearCollected_sc+
+fish_data$year_host <- paste(fish_data$ReportingYear, fish_data$Species, sep = "_")
+
+final_dataset$year_host <- paste(final_dataset$YearCollected, final_dataset$fish_spp, sep = "_")
+
+final_w_fish <- merge(final_dataset, fish_data, by = "year_host", all = TRUE)
+
+View(final_w_fish)
+
+# But also you want to add a one-year lag, right?
+
+lag_data <- data.frame(
+  YearCollected = final_w_fish$YearCollected,
+  lagged_density = final_w_fish$mean_density
+)
+
+lag_data$one_year_lagged <- (lag_data$YearCollected-1)
+
+lag_data$year_host <- paste(lag_data$one_year_lagged, lag_data$fish_spp, sep = "_")
+
+final_w_fish_lagged <- merge(final_w_fish, lag_data, by = "year_host", all = TRUE)
+
+View(final_w_fish_lagged)
+
+#... Okay this isn't right at the moment, but let's leave it aside for now.
+
+
+# What about looking at water temperature?
+
+temp_data <- read.csv("data/Rio_Grande_Albuquerque_temperature_annual_site_summary.csv", header = T, sep = ",")
+
+temp_data_final <- temp_data %>%
+  group_by(year) %>%
+  summarize(mean_temp = mean(annual_mean_temp_C))
+
+plot(temp_data_final$mean_temp~temp_data_final$year)
+
+# that 1949 point is super weird, get rid of it.
+
+temp_data_final <- temp_data_final %>%
+  filter(year != 1949)
+
+final_w_temp <- merge(final_dataset, temp_data_final, by.x = "YearCollected", by.y = "year", all = TRUE)
+
+temp_plot<-ggplot(final_w_temp,aes(mean_temp,psite_count,group=fish_spp))+
+  geom_point(aes(group=fish_spp,color=fish_spp))
+
+temp_model<-lm(psite_count~mean_temp*fish_spp, data=final_w_temp)
+summary(temp_model)
+
+temp_model<-glmer.nb(psite_count~mean_temp*fish_spp+
                           host_psite_combo*TotalLength_mm_sc+
                           Latitude_within+
                           (1|CatalogNumber_chr),
-                        data=final_dataset,
+                        data=final_w_temp,
                         family="nbinom",
                         control = glmerControl(
                           optimizer = "bobyqa",
                           optCtrl = list(maxfun = 2e5)))
 
-summary(model_draft_6)
+summary(temp_model)
+
+temp_model_2<-glmer.nb(psite_count~mean_temp+fish_spp+
+                       host_psite_combo*TotalLength_mm_sc+
+                       Latitude_within+
+                       (1|CatalogNumber_chr),
+                     data=final_w_temp,
+                     family="nbinom",
+                     control = glmerControl(
+                       optimizer = "bobyqa",
+                       optCtrl = list(maxfun = 2e5)))
+
+summary(temp_model_2)
+
+temp_model_3<-glmer.nb(psite_count~mean_temp+host_psite_combo+
+                         fish_spp*TotalLength_mm_sc+
+                         Latitude_within+
+                         (1|CatalogNumber_chr),
+                       data=final_w_temp,
+                       family="nbinom",
+                       control = glmerControl(
+                         optimizer = "bobyqa",
+                         optCtrl = list(maxfun = 2e5)))
+
+summary(temp_model_2)
+
+# Doesn't look like there's much to the temperature story
 
 
+
+# The bigger question is, what's up with parasite diversity?  Is there a big difference between what happens with
+# HYBAMA and the remaining species? Is that why there isn't a density relationship for HYBAMA, because some parasite
+# species have been bottlenecked out of the host population?
+
+### DIVERSITY ANALYSIS
+
+levels(as.factor(minus_myxos$Parasite_taxonomic_group))
+
+# You've already created a column of 0/1 above, all_data$positive. Now sum across those to obtain
+# raw richness for each fish individual.
+
+raw_richness_dataset <- all_data %>%
+  group_by(IndividualFishID,CatalogNumber,YearCollected,TotalLength_mm,CI,Latitude,fish_spp) %>%
+  summarize(raw_richness = sum(positive,na.rm=T))
+
+View(raw_richness_dataset)
+
+# Before you dive into analysis, just see what's up.
+
+raw_richness_plot<-ggplot(raw_richness_dataset,aes(YearCollected,raw_richness),group=CI,color=CI)+
+  #facet_wrap(vars(Fish_sp.x),nrow=2,ncol=4)+
+  geom_point(aes(group=CI,color=CI),position=position_jitter(width=0.15),size=3,pch=19)+
+  geom_smooth(aes(color=CI),method="lm")+
+  scale_color_manual(values=c("cadetblue","burlywood4"))+
+  xlab("year")+
+  ylab("raw richness (number of parasite taxa per fish individual)")+
+  theme_minimal()+
+  #ylim(0,10)+
+  #labs(linetype="parasite life history strategy")+
+  theme(strip.text=element_text(size=20,face="italic"),
+        plot.title=element_text(size=30,hjust=0.5,face="plain"),
+        axis.text.y=element_text(size=20),
+        axis.title.y=element_text(size=26),
+        axis.text.x=element_text(size=20,color="black"),
+        axis.title.x=element_text(size=26),
+        panel.background=element_rect(fill="white",color="black"),
+        panel.grid.minor=element_line(color=NA),panel.spacing = unit(1, "lines"))+
+  #scale_x_discrete(limits=(rev(levels(raneff_predictions$x))))+
+  theme(legend.position="top",legend.title = element_blank(),
+        legend.text = element_text(size=20))
+raw_richness_plot
+
+
+hist(raw_richness_dataset$raw_richness)
+
+# Now let's try analyzing. First scale all numerical values, including year. And make sure that
+# CatalogNumber is getting treated as a categorical variable.
+
+raw_richness_dataset$YearCollected_sc <- scale(raw_richness_dataset$YearCollected)
+raw_richness_dataset$CatalogNumber_chr <- as.character(raw_richness_dataset$CatalogNumber)
+
+model_draft_raw_richness<-glmer.nb(raw_richness~CI*YearCollected_sc+fish_spp*scale(TotalLength_mm)+
+                                     +(1|CatalogNumber_chr)+(1|Latitude),
+                                   data=raw_richness_dataset,family="nbinom")
+summary(model_draft_raw_richness)
+
+
+model_draft_raw_richness_2<-glmer.nb(raw_richness~CI*YearCollected_sc*fish_spp+fish_spp*scale(TotalLength_mm)+
+                                       +(1|CatalogNumber_chr)+(1|Latitude),
+                                   data=raw_richness_dataset,family="nbinom")
+summary(model_draft_raw_richness_2)
+
+
+model_draft_raw_richness_3<-glmer.nb(raw_richness~YearCollected_sc*fish_spp+fish_spp*scale(TotalLength_mm)+
+                                       +(1|CatalogNumber_chr)+(1|Latitude),
+                                     data=raw_richness_dataset,family="nbinom")
+summary(model_draft_raw_richness_3)
+
+
+# Now plot.
+
+raw_richness_predictions<-ggeffect(model_draft_raw_richness_3,c("YearCollected_sc", "fish_spp"))
+
+prediction_plot<-ggplot(raw_richness_predictions,aes(x,predicted),group=group,color=group)+
+  geom_point(aes(group=group,color=group),size=4,pch=19,position = position_dodge(width = 0.5))+
+  geom_errorbar(data=raw_richness_predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high,group=group,color=group),
+                width=0.04,position = position_dodge(width = 0.5))+
+  geom_line(aes(group=group,color=group),position = position_dodge(width = 0.5))+
+  scale_color_manual(values=c("cadetblue","burlywood4","black"))+
+  xlab("")+
+  ylab("predicted parasite taxon richness per host individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),axis.title.y=element_text(size=16),
+        axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
+        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
+  scale_x_discrete(limits=(rev(levels(big_predictions$x))))+
+  theme(legend.position="top",legend.title = element_blank(),
+        legend.text = element_text(size=12))
+prediction_plot
+
+
+
+
+
+
+levels(as.factor(final_dataset$psite_taxon))
+
+fish_data
+
+
+plot(final_w_fish$psite_count~final_w_fish$mean_density)
+
+density_model<-lm(psite_count~mean_density*fish_spp, data=final_w_fish)
+summary(density_model)
+
+density_predictions<-ggpredict(density_model,c("mean_density","fish_spp"))
+str(density_predictions)
+
+diverging_pal <- c("#5ab4ac","#d8b365")
+darker_pal <- c("#018571","#a6611a")
+
+big_plot<-ggplot(density_predictions,aes(x,predicted,group=group))+
+  #geom_ribbon(data=big_predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),alpha=0.5)+
+  geom_line(aes(group=group,color=group))+
+  #scale_color_manual(values=darker_pal)+
+  scale_fill_manual(values=diverging_pal)+
+  #facet_grid(~facet)+
+  #ylim(0,10)+
+  xlab("host density")+
+  ylab("predicted parasite abundance\n per parasite taxon per host individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(plot.title=element_text(size=24,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=16),strip.text.x = element_text(size = 20),
+        axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
+        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
+  #scale_x_discrete(limits=(rev(levels(big_predictions$x))))+
+  theme(legend.position="top",legend.title = element_blank(),
+        legend.text = element_text(size=20))
+big_plot
+
+
+# Interesting... it looks like all fish have been caught at lower densities in later years. There is a positive
+# relationship with density for GAMAFF and PIMPRO, but not so for HYBAMA. Could be time lags? Also, could be
+# that, once HYBAMA has been through a population bottleneck, some parasites just drop out and are not recoverable.
+# That would be detectable if we looked at the number of species infecting each.
+
+# First, investigate time lags.
+
+final_w_fish$density_lagged_one_year <- final_w_fish$YearCollected-1
+
+density_model<-lm(psite_count~mean_density*fish_spp, data=final_w_fish)
+summary(density_model)
+
+density_predictions<-ggpredict(density_model,c("mean_density","fish_spp"))
+str(density_predictions)
+
+diverging_pal <- c("#5ab4ac","#d8b365")
+darker_pal <- c("#018571","#a6611a")
+
+big_plot<-ggplot(density_predictions,aes(x,predicted,group=group))+
+  #geom_ribbon(data=big_predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high),alpha=0.5)+
+  geom_line(aes(group=group,color=group))+
+  #scale_color_manual(values=darker_pal)+
+  scale_fill_manual(values=diverging_pal)+
+  #facet_grid(~facet)+
+  #ylim(0,10)+
+  xlab("host density")+
+  ylab("predicted parasite abundance\n per parasite taxon per host individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(plot.title=element_text(size=24,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=16),strip.text.x = element_text(size = 20),
+        axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
+        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
+  #scale_x_discrete(limits=(rev(levels(big_predictions$x))))+
+  theme(legend.position="top",legend.title = element_blank(),
+        legend.text = element_text(size=20))
+big_plot
 
 
 # Then pull out the individual parasite trajectories and plot them as in the Puget Sound paper
