@@ -695,7 +695,43 @@ temp_model_3<-glmer.nb(psite_count~mean_temp+host_psite_combo+
                          optimizer = "bobyqa",
                          optCtrl = list(maxfun = 2e5)))
 
-summary(temp_model_2)
+summary(temp_model_3)
+
+temp_model_3<-glmer.nb(psite_count~mean_temp+host_psite_combo+
+                         fish_spp*TotalLength_mm_sc+
+                         Latitude_within+
+                         (1|CatalogNumber_chr),
+                       data=final_w_temp,
+                       family="nbinom",
+                       control = glmerControl(
+                         optimizer = "bobyqa",
+                         optCtrl = list(maxfun = 2e5)))
+
+summary(temp_model_3)
+
+temp_model_4<-glmer.nb(psite_count~mean_temp+fish_spp+fish_spp:host_psite_combo+
+                         TotalLength_mm_sc+
+                         Latitude_within+
+                         (1|CatalogNumber_chr),
+                       data=final_w_temp,
+                       family="nbinom",
+                       control = glmerControl(
+                         optimizer = "bobyqa",
+                         optCtrl = list(maxfun = 2e5)))
+
+summary(temp_model_4)
+
+temp_model_5<-glmer.nb(psite_count~mean_temp+fish_spp+fish_spp:host_psite_combo+
+                         TotalLength_mm_sc+
+                         #Latitude_within+
+                         (1|CatalogNumber_chr),
+                       data=final_w_temp,
+                       family="nbinom",
+                       control = glmerControl(
+                         optimizer = "bobyqa",
+                         optCtrl = list(maxfun = 2e5)))
+
+summary(temp_model_5)
 
 # Doesn't look like there's much to the temperature story
 
