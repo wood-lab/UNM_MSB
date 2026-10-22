@@ -15,8 +15,7 @@ library(MASS)
 library(dplyr)
 
 
-# R is really useful for doing quick tallies and plots.
-# Let's do some together!
+# Read in the data
 
 hyb_ama_data<-read.csv("data/processed/Hybognathus_amarus_processed_machine_readable_2025.07.06.csv")
 gam_aff_data<-read.csv("data/processed/Gambusia_affinis_processed_machine_readable_2025.08.01.csv")
@@ -286,13 +285,182 @@ plot(control_only$psite_count~control_only$YearCollected)
 
 plot(impact_only$psite_count~impact_only$YearCollected)
 
-View(final_dataset)
 
 # Weird that there are a handful of very late specimens that don't show up in control or impact...
 
 recents<-final_dataset %>%
   filter(YearCollected>2010)
 View(recents)
+
+
+# Ah, the more recent specimens that Tom and Emily collected for us are missing lat/long, and are therefore missing
+# CI classification. I can extract lats and longs from GBIF.
+
+final_dataset <- final_dataset %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124139",35.029588,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124139",-106.672074,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124141",35.09061,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124141",-106.683663,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124143",35.323975,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124143",-106.556611,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124144",35.029588,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124144",-106.672074,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124146",35.09061,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124146",-106.683663,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124148",35.323975,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124148",-106.556611,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124149",35.323975,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124149",-106.556611,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124152",35.09061,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124152",-106.683663,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124153",35.323975,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124153",-106.556611,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124155",35.029588,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124155",-106.672074,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124157",35.09061,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124157",-106.683663,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124158",35.323975,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124158",-106.556611,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124159",35.323975,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124159",-106.556611,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124161",35.029588,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124161",-106.672074,Longitude))) %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:124163",35.029588,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:124163",-106.672074,Longitude)))
+
+recents<-final_dataset %>%
+  filter(YearCollected>2010)
+View(recents)
+
+
+# While we're at it, let's just check to make sure there aren't any missing data.
+
+thing<-final_dataset %>%
+  filter(is.na(YearCollected))
+thing
+
+# Every entry has a valid year. Now check latitude.
+
+thing<-final_dataset %>%
+  filter(is.na(Latitude))
+
+# Okay, a handful still missing latitude. Let's check on them in GBIF and fill in the blanks.
+
+# MSB:Fish:438 - looks like this is incorrectly written - should be MSB:Fish:4389
+
+final_dataset <- final_dataset %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:438",35.092867,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:438",-106.682332,Longitude))) %>%
+  mutate(CatalogNumber = (ifelse(CatalogNumber == "MSB:Fish:438","MSB:Fish:4389",CatalogNumber)))
+  
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:438")
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:4389")
+
+thing<-final_dataset %>%
+  filter(is.na(Latitude))
+
+# MBS:Fish:1069 needs to be MSB:Fish:1069
+
+final_dataset <- final_dataset %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MBS:Fish:1069",35.051774,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MBS:Fish:1069",-106.671997,Longitude))) %>%
+  mutate(CatalogNumber = (ifelse(CatalogNumber == "MBS:Fish:1069","MSB:Fish:1069",CatalogNumber)))
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MBS:Fish:1069")
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:1069")
+
+thing<-final_dataset %>%
+  filter(is.na(Latitude))
+
+# MSB:Fish:7832-2 needs to be MSB:Fish:7832
+
+final_dataset <- final_dataset %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:7832-2",35.283028,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:7832-2",-106.598139,Longitude))) %>%
+  mutate(CatalogNumber = (ifelse(CatalogNumber == "MSB:Fish:7832-2","MSB:Fish:7832",CatalogNumber)))
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:7832-2")
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:7832")
+
+thing<-final_dataset %>%
+  filter(is.na(Latitude))
+
+
+# MSB:Fish:7835 - this number is wrong (corresponds to different fish species in GBIF)
+# I'm confident that this was mistyped - MSB:Fish:7832 was collected on the 18th in 1990 and is missing the fish
+# that should be MSB:Fish:7832-5. I checked the original datasheets and the original dataset.
+
+final_dataset <- final_dataset %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:7835",35.283028,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:7835",-106.598139,Longitude))) %>%
+  mutate(CatalogNumber = (ifelse(CatalogNumber == "MSB:Fish:7835","MSB:Fish:7832",CatalogNumber)))
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:7835")
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:7832")
+
+thing<-final_dataset %>%
+  filter(is.na(Latitude))
+
+
+# Okay, now get rid of existing CI and reassign
+
+# Then make a map, make sure everything is kosher, then make the temporal plots
+
+final_dataset$CI<-vector("character",length(final_dataset$CatalogNumber))
+
+for(i in 1:length(lots$InstitutionCode)) {
+  
+  if(is.na(lots$Latitude[i])){
+    lots$CI[i] <- NA
+  } else {
+    
+    if(lots$Latitude[i] > 35.211106){
+      lots$CI[i] <- "control"
+      
+    } else {
+      
+      lots$CI[i] <- "impact"
+      
+    }
+  }
+}
+lots$CI
+
+big_plot<-ggplot(big_predictions,aes(x,predicted),group=group,color=group)+
+  geom_point(aes(group=group,color=group),size=4,pch=19)+
+  geom_errorbar(data=big_predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high,group=group,color=group),width=0.03)+
+  geom_line(aes(group=group,color=group))+
+  #scale_color_manual(name = c(""),values=plasma_pal)+
+  xlab("year")+
+  ylab("predicted parasite abundance\n per parasite taxon per host individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),axis.title.y=element_text(size=16),
+        axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
+        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
+  scale_x_discrete(limits=(rev(levels(big_predictions$x))))+
+  theme(legend.position="top",legend.title = element_text(size = 18),
+        legend.text = element_text(size=12))
+big_plot
+
+
+
+View(final_dataset)
+
+
 
 
 
