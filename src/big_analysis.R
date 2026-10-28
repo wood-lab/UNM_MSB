@@ -13,6 +13,22 @@ library(ggeffects)
 library(reshape2)
 library(MASS)
 library(dplyr)
+library(maps)
+library(mapdata)
+library(maptools) #for shapefiles
+library(scales) #for transparency
+library(rgdal)
+library(maps)
+library(mapdata)
+library(scales) #for transparency
+library(ggmap)
+library(ggsnap)
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(cowplot)
+library(sp)
+library(raster)
 
 
 # Read in the data
@@ -343,6 +359,7 @@ thing
 
 thing<-final_dataset %>%
   filter(is.na(Latitude))
+thing
 
 # Okay, a handful still missing latitude. Let's check on them in GBIF and fill in the blanks.
 
@@ -394,7 +411,6 @@ thing<-final_dataset %>%
 thing<-final_dataset %>%
   filter(is.na(Latitude))
 
-
 # MSB:Fish:7835 - this number is wrong (corresponds to different fish species in GBIF)
 # I'm confident that this was mistyped - MSB:Fish:7832 was collected on the 18th in 1990 and is missing the fish
 # that should be MSB:Fish:7832-5. I checked the original datasheets and the original dataset.
@@ -414,54 +430,141 @@ thing<-final_dataset %>%
   filter(is.na(Latitude))
 
 
-# Okay, now get rid of existing CI and reassign
+# Okay, now get rid of existing CI and combo and reassign
 
-# Then make a map, make sure everything is kosher, then make the temporal plots
+final_dataset$CI<-NULL
+final_dataset$combo<-NULL
 
 final_dataset$CI<-vector("character",length(final_dataset$CatalogNumber))
 
-for(i in 1:length(lots$InstitutionCode)) {
+for(i in 1:length(final_dataset$CatalogNumber)) {
   
-  if(is.na(lots$Latitude[i])){
-    lots$CI[i] <- NA
+  if(is.na(final_dataset$Latitude[i])){
+    final_dataset$CI[i] <- NA
   } else {
     
-    if(lots$Latitude[i] > 35.211106){
-      lots$CI[i] <- "control"
+    if(final_dataset$Latitude[i] > 35.211106){
+      final_dataset$CI[i] <- "control"
       
     } else {
       
-      lots$CI[i] <- "impact"
+      final_dataset$CI[i] <- "impact"
       
     }
   }
 }
-lots$CI
+final_dataset$CI
 
-big_plot<-ggplot(big_predictions,aes(x,predicted),group=group,color=group)+
-  geom_point(aes(group=group,color=group),size=4,pch=19)+
-  geom_errorbar(data=big_predictions,mapping=aes(x=x,ymin=conf.low,ymax=conf.high,group=group,color=group),width=0.03)+
-  geom_line(aes(group=group,color=group))+
-  #scale_color_manual(name = c(""),values=plasma_pal)+
+thing<-final_dataset %>%
+  filter(is.na(CI))
+
+
+# Then make a map, make sure everything is kosher
+
+min(final_dataset$Latitude)
+max(final_dataset$Latitude)
+
+lat_limits <- c(34.74, 35.5)
+
+polygon<-readOGR("mapping/data/Albuquerque_City_Limits-polygon.shp")
+polygon_df<-fortify(polygon)
+
+water<-readOGR("mapping/data/NHDArea.shp")
+water_df<-fortify(water)
+
+bounds<-c(left=-106.89, bottom=34.74, right=-106.45, top=35.5)
+map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% ggmap()+
+  geom_point()+
+  xlab("Longitude (°W)")+
+  ylab("Latitude (°N)")+
+  theme(axis.title.x=element_text(size=20),axis.title.y=element_text(size=20),
+        axis.text=element_text(size=14),axis.title=element_text(size=14))+
+  geom_rect(xmin=-106.89,ymin=34.74,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
+  geom_hline(yintercept=35.2102673,linetype="dashed")+
+  geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
+  geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  coord_cartesian(ylim = lat_limits, expand = FALSE)+
+  annotate("text",x=-106.6,y=35.0975,label="City of Albuquerque",size=4.5)+
+  annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)
+map
+
+# Just check to make sure everything is on the river where it belongs
+# NEXT STEP: Investigate the points that are not on the river and exclude any that aren't in Rio Grande proper
+# Color these points by fish species
+# Put the fish species legend on top
+# Put the map with the points into the panel
+
+map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% ggmap()+
+  xlab("Longitude (°W)")+
+  ylab("Latitude (°N)")+
+  theme(axis.title.x=element_text(size=20),axis.title.y=element_text(size=20),
+        axis.text=element_text(size=14),axis.title=element_text(size=14))+
+  geom_rect(xmin=-106.89,ymin=34.74,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
+  geom_hline(yintercept=35.2102673,linetype="dashed")+
+  geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
+  geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  annotate("text",x=-106.6,y=35.0975,label="City of Albuquerque",size=4.5)+
+  annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)+
+  geom_point(data = lots, aes(x=Longitude,y=Latitude))
+map
+
+
+# coalesce all of the data into just fish individuals
+
+lots <- final_dataset %>%
+  group_by(IndividualFishID,Latitude,Longitude,YearCollected,fish_spp) %>%
+  summarize(count = n())
+
+# make the plot
+library(wesanderson)
+wes_palette("Zissou1")
+pal<-wes_palette(name = "Zissou1", 3, type = "continuous")
+
+big_plot<-ggplot(lots,aes(jitter(YearCollected, amount = 0.5),jitter(Latitude, amount = 0.1)))+
+  geom_point(aes(group=fish_spp,color=fish_spp),size=2,pch=19)+
+  scale_color_manual(values=pal,name="Host spp.")+
+  scale_y_continuous(limits = lat_limits,
+                     expand = expansion(mult = 0))+
   xlab("year")+
-  ylab("predicted parasite abundance\n per parasite taxon per host individual")+
+  ylab("")+
+  geom_hline(yintercept = 35.211106, linetype = "dashed")+
   theme_minimal()+
   #labs(linetype="parasite life history strategy")+
-  theme(plot.title=element_text(size=18,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),axis.title.y=element_text(size=16),
+  theme(axis.ticks.y = element_line(color = "black", linewidth = 0.5),
+        axis.ticks.length.y = unit(0.1, "cm"),
+        plot.title=element_text(size=18,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=16),
         axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
         panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
         panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
-  scale_x_discrete(limits=(rev(levels(big_predictions$x))))+
-  theme(legend.position="top",legend.title = element_text(size = 18),
-        legend.text = element_text(size=12))
+  theme(legend.position="none")
 big_plot
+
+# Align the y-axes of the map and the plot
+
+panels_cd <- cowplot::plot_grid(
+  map, big_plot,
+  align = "v",
+  axis = "lr",
+  rel_widths = c(1, 3)
+)
+
+
+# Put the map and the plot together
+
+final_figure <- ggdraw(plot=NULL,xlim=c(0,30),ylim=c(0,10))+
+  draw_plot(panels_cd,x=0,y=0,width=10,height=10)+
+  draw_label("(a)",x=0.5,y=9.75,size=30)+
+  draw_label("(b)",x=5.5,y=9.75,size=30)
+final_figure
+
 
 
 
 View(final_dataset)
 
 
-
+# then make the temporal plots of psite change - just the raw data
 
 
 
