@@ -502,11 +502,259 @@ map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% g
   geom_rect(xmin=-106.89,ymin=34.74,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
   geom_hline(yintercept=35.2102673,linetype="dashed")+
   geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
-  geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
-  annotate("text",x=-106.6,y=35.0975,label="City of Albuquerque",size=4.5)+
+  #geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  #annotate("text",x=-106.6,y=35.0975,label="City of Albuquerque",size=4.5)+
   annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)+
-  geom_point(data = lots, aes(x=Longitude,y=Latitude))
+  geom_point(data = lots, aes(x=Longitude,y=Latitude),size=1)
 map
+
+# Okay, it looks like some of these points are not on the Rio Grande proper.
+# Let's make a column to indicate whether each point is on the river itself, or in connected bodies of water 
+# (sloughs, bosque, oxbow lakes, ditches, drains, canals, irrigation returns, beaver ponds, laterals).
+# I'll go into GBIF to check the localities on all of these records.
+# Let's break it up by latitude to make it easier to hand-check.
+
+check_localities <- final_dataset %>%
+  filter(Longitude > -106.5)
+View(check_localities)
+
+thing <- check_localities %>%
+  group_by(CatalogNumber, Latitude, Longitude) %>%
+  summarize(count = n())
+View(thing)
+
+MSB:Fish:327
+MSB:Fish:3391
+MSB:Fish:4750
+MSB:Fish:679
+
+check_localities <- final_dataset %>%
+  filter(Longitude > -106.6 & Longitude < -106.5 & Latitude > 35.2102673)
+View(check_localities)
+
+thing <- check_localities %>%
+  group_by(CatalogNumber, Latitude, Longitude) %>%
+  summarize(count = n())
+View(thing)
+
+MSB:Fish:12531
+MSB:Fish:334
+MSB:Fish:365
+MSB:Fish:4172
+MSB:Fish:4206
+MSB:Fish:4987
+MSB:Fish:5007
+
+check_localities <- final_dataset %>%
+  filter(Longitude < -106.6 & Latitude > 35.2102673)
+View(check_localities)
+
+thing <- check_localities %>%
+  group_by(CatalogNumber, Latitude, Longitude) %>%
+  summarize(count = n())
+View(thing)
+
+MSB:Fish:324
+MSB:Fish:326
+MSB:Fish:330
+MSB:Fish:3421
+MSB:Fish:4353
+MSB:Fish:706
+
+check_localities <- final_dataset %>%
+  filter(Latitude < 35.2102673 & Latitude > 35.1)
+View(check_localities)
+
+thing <- check_localities %>%
+  group_by(CatalogNumber, Latitude, Longitude) %>%
+  summarize(count = n())
+View(thing)
+
+MSB:Fish:1082
+MSB:Fish:1085
+MSB:Fish:1086
+MSB:Fish:1098
+MSB:Fish:1105
+MSB:Fish:1149
+MSB:Fish:1160
+MSB:Fish:280
+MSB:Fish:305
+MSB:Fish:3966
+MSB:Fish:4012
+MSB:Fish:4453
+MSB:Fish:4781
+MSB:Fish:515
+MSB:Fish:611
+MSB:Fish:612
+MSB:Fish:613
+MSB:Fish:622
+MSB:Fish:630
+MSB:Fish:658
+MSB:Fish:7206
+MSB:Fish:7208
+
+check_localities <- final_dataset %>%
+  filter(Latitude > 34.93, Latitude < 35.1)
+View(check_localities)
+
+thing <- check_localities %>%
+  group_by(CatalogNumber, Latitude, Longitude) %>%
+  summarize(count = n())
+View(thing)
+
+MSB:Fish:1069
+MSB:Fish:1078
+MSB:Fish:1081
+MSB:Fish:1089
+MSB:Fish:1100
+MSB:Fish:1131
+MSB:Fish:285
+MSB:Fish:288
+MSB:Fish:307
+MSB:Fish:4389
+MSB:Fish:6300
+MSB:Fish:6303
+MSB:Fish:632
+MSB:Fish:680
+MSB:Fish:7235
+MSB:Fish:7239
+MSB:Fish:7252
+MSB:Fish:7258
+
+check_localities <- final_dataset %>%
+  filter(Latitude < 34.93)
+View(check_localities)
+
+thing <- check_localities %>%
+  group_by(CatalogNumber, Latitude, Longitude) %>%
+  summarize(count = n())
+View(thing)
+
+MSB:Fish:11194
+MSB:Fish:14485
+MSB:Fish:19595
+MSB:Fish:4045
+MSB:Fish:9465
+
+
+# Okay, now I have a list of all the catalog numbers that were not on the Rio Grande proper. Let's make a column
+# to say whether it's on river or off river.
+
+
+final_dataset$river<-vector("character",length(final_dataset$CatalogNumber))
+
+for(i in 1:length(final_dataset$CatalogNumber)) {
+  if(final_dataset$CatalogNumber[i] == "MSB:Fish:327" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:3391" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4750" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:679" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:12531" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:334" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:365" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4172" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4206" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4987" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:5007" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:324" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:326" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:330" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:3421" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4353" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:706" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1082" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1085" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1086" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1098" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1105" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1149" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1160" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:280" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:305" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:3966" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4012" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4453" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4781" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:515" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:611" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:612" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:613" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:622" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:630" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:658" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:7206" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:7208" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1069" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1078" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1081" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1089" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1100" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:1131" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:285" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:288" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:307" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4389" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:6300" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:6303" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:632" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:680" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:7235" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:7239" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:7252" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:7258" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:11194" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:14485" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:19595" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:4045" |
+     final_dataset$CatalogNumber[i] == "MSB:Fish:9465"
+     ){
+      final_dataset$river[i] <- "off_river"
+      
+    } else {
+      
+      final_dataset$river[i] <- "on_river"
+      
+    }
+  }
+
+final_dataset$river
+View(final_dataset)
+
+levels(as.factor(final_dataset$river))
+
+
+# Now modify the map so that it shows whether sites are on or off river.
+
+lots <- final_dataset %>%
+  group_by(IndividualFishID,Latitude,Longitude,YearCollected,fish_spp,river) %>%
+  summarize(count = n())
+
+map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% ggmap()+
+  xlab("Longitude (°W)")+
+  ylab("Latitude (°N)")+
+  theme(axis.title.x=element_text(size=20),axis.title.y=element_text(size=20),
+        axis.text=element_text(size=14),axis.title=element_text(size=14))+
+  geom_rect(xmin=-106.89,ymin=34.74,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
+  geom_hline(yintercept=35.2102673,linetype="dashed")+
+  geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
+  #geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  #annotate("text",x=-106.6,y=35.0975,label="City of Albuquerque",size=4.5)+
+  annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)+
+  geom_point(data = lots, aes(x=Longitude,y=Latitude,group=river,color=river), size = 1)+
+  scale_color_manual(values = c("#D90429","#1B263B"), name = "")
+map
+
+# One point is miscategorized.
+
+check_localities <- final_dataset %>%
+  filter(Longitude > -106.7 & Longitude < -106.65 & Latitude > 35.11 & Latitude < 35.15)
+View(check_localities)
+
+thing <- check_localities %>%
+  group_by(CatalogNumber, Latitude, Longitude) %>%
+  summarize(count = n())
+View(thing)
+
+# ... haven't figured it out yet, pick up here.
 
 
 # coalesce all of the data into just fish individuals
