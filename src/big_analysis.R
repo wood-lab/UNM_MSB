@@ -489,10 +489,6 @@ map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% g
 map
 
 # Just check to make sure everything is on the river where it belongs
-# NEXT STEP: Investigate the points that are not on the river and exclude any that aren't in Rio Grande proper
-# Color these points by fish species
-# Put the fish species legend on top
-# Put the map with the points into the panel
 
 map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% ggmap()+
   xlab("Longitude (°W)")+
@@ -732,45 +728,147 @@ map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% g
   xlab("Longitude (°W)")+
   ylab("Latitude (°N)")+
   theme(axis.title.x=element_text(size=20),axis.title.y=element_text(size=20),
-        axis.text=element_text(size=14),axis.title=element_text(size=14))+
+        axis.text=element_text(size=14),axis.title=element_text(size=14),
+        legend.key = element_rect(fill = "white", color = NA))+
   geom_rect(xmin=-106.89,ymin=34.74,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
   geom_hline(yintercept=35.2102673,linetype="dashed")+
   geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
-  #geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
-  #annotate("text",x=-106.6,y=35.0975,label="City of Albuquerque",size=4.5)+
+  geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  annotate("text",x=-106.58,y=35.11,label="City of Albuquerque",size=4)+
   annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)+
-  geom_point(data = lots, aes(x=Longitude,y=Latitude,group=river,color=river), size = 1)+
-  scale_color_manual(values = c("#D90429","#1B263B"), name = "")
+  geom_point(data = lots, aes(x=Longitude,y=Latitude,group=river,shape=river,color=YearCollected), size = 2.5)+
+  scale_shape_manual(values = c(17,16), name = "Sampling location", labels = c("off river","on river"))+
+  scale_color_viridis_c(
+    option = "plasma",
+    direction = 1,
+    name = "Year collected"
+  )
 map
 
-# One point is miscategorized.
+# One point is miscategorized. Zoom in on it to figure why.
+
+bounds<-c(left=-106.89, bottom=35.125, right=-106.45, top=35.150)
+map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% ggmap()+
+  xlab("Longitude (°W)")+
+  ylab("Latitude (°N)")+
+  theme(axis.title.x=element_text(size=20),axis.title.y=element_text(size=20),
+        axis.text=element_text(size=14),axis.title=element_text(size=14),
+        legend.key = element_rect(fill = "white", color = NA))+
+  geom_rect(xmin=-106.89,ymin=34.74,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
+  geom_hline(yintercept=35.2102673,linetype="dashed")+
+  geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
+  geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  annotate("text",x=-106.58,y=35.11,label="City of Albuquerque",size=4)+
+  annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)+
+  geom_point(data = lots, aes(x=Longitude,y=Latitude,group=river,shape=river,color=YearCollected), size = 2.5)+
+  scale_shape_manual(values = c(17,16), name = "Sampling location", labels = c("off river","on river"))+
+  scale_color_viridis_c(
+    option = "plasma",
+    direction = 1,
+    name = "Year collected"
+  )
+map
 
 check_localities <- final_dataset %>%
-  filter(Longitude > -106.7 & Longitude < -106.65 & Latitude > 35.11 & Latitude < 35.15)
+  filter(Longitude > -106.7 & Longitude < -106.65 & Latitude > 35.125 & Latitude < 35.15)
 View(check_localities)
 
 thing <- check_localities %>%
-  group_by(CatalogNumber, Latitude, Longitude) %>%
+  group_by(CatalogNumber, Latitude, Longitude, river, YearCollected) %>%
   summarize(count = n())
 View(thing)
 
-# ... haven't figured it out yet, pick up here.
+# Okay, got it. It's MSB:Fish:30075. This specimen's lat and long are wrong in GBIF. I used the locality information
+# to find the correct lat and long, and will update the dataset accordingly.
+
+final_dataset <- final_dataset %>%
+  mutate(Latitude = (ifelse(CatalogNumber == "MSB:Fish:30075",35.146,Latitude))) %>%
+  mutate(Longitude = (ifelse(CatalogNumber == "MSB:Fish:30075",-106.676,Longitude)))
+
+thing<-final_dataset %>%
+  filter(CatalogNumber == "MSB:Fish:30075")
 
 
-# coalesce all of the data into just fish individuals
+# Now remake the full map with the corrected dataset
 
 lots <- final_dataset %>%
-  group_by(IndividualFishID,Latitude,Longitude,YearCollected,fish_spp) %>%
+  group_by(IndividualFishID,Latitude,Longitude,YearCollected,fish_spp,river) %>%
   summarize(count = n())
 
-# make the plot
+bounds<-c(left=-106.89, bottom=34.74, right=-106.45, top=35.5)
+map<-get_stadiamap(bounds, zoom=11, maptype = "stamen_terrain_background") %>% ggmap()+
+  xlab("Longitude (°W)")+
+  ylab("Latitude (°N)")+
+  theme(axis.title.x=element_text(size=20),axis.title.y=element_text(size=20),
+        axis.text=element_text(size=14),axis.title=element_text(size=14),
+        legend.key = element_rect(fill = "white", color = NA),
+        legend.position = "top")+
+  geom_rect(xmin=-106.89,ymin=34.74,xmax=-106.45,ymax=35.2102673,fill="grey",alpha=0.2,linetype="blank")+
+  geom_hline(yintercept=35.2102673,linetype="dashed")+
+  geom_map(data=water_df,map=water_df,aes(x=long,y=lat,map_id=id),color="lightsteelblue3",fill="lightsteelblue3")+
+  geom_map(data=polygon_df,map=polygon_df,aes(x=long,y=lat,map_id=id),color="black",fill=NA)+
+  annotate("text",x=-106.58,y=35.11,label="City of Albuquerque",size=4)+
+  annotate("text",x=-106.58,y=35.33,label="Rio Grande River",size=5,angle=55)+
+  geom_point(data = lots, aes(x=Longitude,y=Latitude,group=river,shape=river,color=YearCollected), size = 2.5)+
+  scale_shape_manual(values = c(17,16), guide = "none")+
+  scale_color_viridis_c(
+    option = "plasma",
+    direction = 1,
+    name = "Year collected",
+    guide = guide_colorbar(
+      barwidth = unit(4.5, "cm"),
+      barheight = unit(0.4, "cm"),
+      title.position = "left",
+      title.vjust = 0.8))+
+  coord_cartesian(
+    ylim = lat_limits,
+    expand = FALSE
+  )
+map
+
+
+# Coalesce all of the data into just fish individuals
+
+lots <- final_dataset %>%
+  group_by(IndividualFishID,Latitude,Longitude,YearCollected,fish_spp,river) %>%
+  summarize(count = n())
+
+# Make the plot of lots.
+
 library(wesanderson)
 wes_palette("Zissou1")
 pal<-wes_palette(name = "Zissou1", 3, type = "continuous")
 
-big_plot<-ggplot(lots,aes(jitter(YearCollected, amount = 0.5),jitter(Latitude, amount = 0.1)))+
-  geom_point(aes(group=fish_spp,color=fish_spp),size=2,pch=19)+
-  scale_color_manual(values=pal,name="Host spp.")+
+big_plot<-ggplot(lots,aes(jitter(YearCollected, amount = 0.5),jitter(Latitude, amount = 0.025)))+
+  annotate(
+    "rect",
+    xmin = -Inf, xmax = Inf,
+    ymin = -Inf, ymax = 35.2102673,
+    fill = "grey70",
+    alpha = 0.3
+  ) +
+  geom_point(aes(group=fish_spp,color=fish_spp,group=river,shape=river),size=2)+
+  scale_shape_manual(
+    values = c("off_river" = 17, "on_river" = 16),
+    breaks = c("on_river", "off_river"),
+    labels = c("on river", "off river"),
+    name = "Sampling location",
+    guide = guide_legend(
+      order = 1,
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  ) +
+  scale_color_manual(
+    values = pal,
+    name = "Host spp.",
+    guide = guide_legend(
+      order = 2,
+      label.theme = element_text(face = "italic"),
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  )+
   scale_y_continuous(limits = lat_limits,
                      expand = expansion(mult = 0))+
   xlab("year")+
@@ -780,49 +878,263 @@ big_plot<-ggplot(lots,aes(jitter(YearCollected, amount = 0.5),jitter(Latitude, a
   #labs(linetype="parasite life history strategy")+
   theme(axis.ticks.y = element_line(color = "black", linewidth = 0.5),
         axis.ticks.length.y = unit(0.1, "cm"),
-        plot.title=element_text(size=18,hjust=0.5,face="plain"),axis.text.y=element_text(size=14),
-        axis.title.y=element_text(size=16),
-        axis.text.x=element_text(size=18,color="black"),axis.title.x=element_text(size=16),
-        panel.background=element_rect(fill="white",color="black"),panel.grid.major=element_line(color=NA),
-        panel.grid.minor=element_line(color=NA),plot.margin=unit(c(0,0,0,0),"cm"))+
-  theme(legend.position="none")
+        plot.title=element_text(size=18,hjust=0.5,face="plain"),
+        axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=22),
+        axis.text.x=element_text(size=16,color="black"),
+        axis.title.x=element_text(size=22),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        panel.background=element_rect(fill="white",color="black"),
+        panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),
+        plot.margin=unit(c(0,0,0,0),"cm"))+
+  theme(legend.position="top")
 big_plot
 
 # Align the y-axes of the map and the plot
 
-panels_cd <- cowplot::plot_grid(
+panels_together <- cowplot::plot_grid(
   map, big_plot,
-  align = "v",
-  axis = "lr",
+  align = "h",
+  axis = "tb",
   rel_widths = c(1, 3)
 )
+panels_together
 
 
 # Put the map and the plot together
 
 final_figure <- ggdraw(plot=NULL,xlim=c(0,30),ylim=c(0,10))+
-  draw_plot(panels_cd,x=0,y=0,width=10,height=10)+
+  draw_plot(panels_together,x=0,y=0,width=30,height=10)+
   draw_label("(a)",x=0.5,y=9.75,size=30)+
-  draw_label("(b)",x=5.5,y=9.75,size=30)
+  draw_label("(b)",x=8.5,y=9.75,size=30)
 final_figure
 
 
+# Okay, now some nice plots of parasite abundance change - just the raw data.
+
+control_data <- final_dataset %>%
+  filter(CI=="control")
+levels(as.factor(control_data$CI))
+
+impact_data <- final_dataset %>%
+  filter(CI=="impact")
+levels(as.factor(impact_data$CI))
+
+control_plot<-ggplot(control_data,aes(jitter(YearCollected,amount=0.5),jitter(as.numeric(psite_count),amount=0.5)))+
+  geom_point(aes(group=fish_spp,color=fish_spp,group=river,shape=river),size=2)+
+  scale_shape_manual(
+    values = c("off_river" = 17, "on_river" = 16),
+    breaks = c("on_river", "off_river"),
+    labels = c("on river", "off river"),
+    name = "Sampling location",
+    guide = guide_legend(
+      order = 1,
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  ) +
+  scale_color_manual(
+    values = pal,
+    name = "Host spp.",
+    guide = guide_legend(
+      order = 2,
+      label.theme = element_text(face = "italic"),
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  )+
+  xlab("year")+
+  ylab("number of parasite individuals per parasite taxon per fish individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(axis.ticks.y = element_line(color = "black", linewidth = 0.5),
+        axis.ticks.length.y = unit(0.1, "cm"),
+        plot.title=element_text(size=18,hjust=0.5,face="plain"),
+        axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=22),
+        axis.text.x=element_text(size=16,color="black"),
+        axis.title.x=element_text(size=22),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        panel.background=element_rect(fill="white",color="black"),
+        panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),
+        plot.margin=unit(c(0,0,0,0),"cm"))+
+  theme(legend.position="top")
+control_plot
 
 
-View(final_dataset)
+impact_plot<-ggplot(impact_data,aes(jitter(YearCollected,amount=0.5),jitter(as.numeric(psite_count),amount=0.5)))+
+  geom_point(aes(group=fish_spp,color=fish_spp,group=river,shape=river),size=2)+
+  scale_shape_manual(
+    values = c("off_river" = 17, "on_river" = 16),
+    breaks = c("on_river", "off_river"),
+    labels = c("on river", "off river"),
+    name = "Sampling location",
+    guide = guide_legend(
+      order = 1,
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  ) +
+  scale_color_manual(
+    values = pal,
+    name = "Host spp.",
+    guide = guide_legend(
+      order = 2,
+      label.theme = element_text(face = "italic"),
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  )+
+  xlab("year")+
+  ylab("number of parasite individuals per parasite taxon per fish individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(axis.ticks.y = element_line(color = "black", linewidth = 0.5),
+        axis.ticks.length.y = unit(0.1, "cm"),
+        plot.title=element_text(size=18,hjust=0.5,face="plain"),
+        axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=22),
+        axis.text.x=element_text(size=16,color="black"),
+        axis.title.x=element_text(size=22),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        panel.background=element_rect(fill="white",color="black"),
+        panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),
+        plot.margin=unit(c(0,0,0,0),"cm"))+
+  theme(legend.position="top")
+impact_plot
+
+# Put the two plots together
+
+raw_data_figure <- ggdraw(plot=NULL,xlim=c(0,20),ylim=c(0,10))+
+  draw_plot(control_plot,x=0,y=0,width=10,height=10)+
+  draw_plot(impact_plot,x=10,y=0,width=10,height=10)+
+  draw_label("(a)",x=0.5,y=9.75,size=30)+
+  draw_label("(b)",x=8.5,y=9.75,size=30)
+raw_data_figure
+
+# Okay, clearly there is a big decline in abundance through time, and little difference between control and impact.
+# I might use this raw data figure, or I might superimpose predictions on top of it. Save it for later.
+# For now, it's good to see the patterns in the raw data:
+# - not much difference between control and impact
+# - decline through time
+# - make sure your models track the difference between on and off river. Actually, why don't we plot that...
+
+on_river_data <- final_dataset %>%
+  filter(river=="on_river")
+levels(as.factor(on_river_data$river))
+
+off_river_data <- final_dataset %>%
+  filter(river=="off_river")
+levels(as.factor(off_river_data$river))
+
+on_river_plot<-ggplot(on_river_data,aes(jitter(YearCollected,amount=0.5),jitter(as.numeric(psite_count),amount=0.5)))+
+  geom_point(aes(group=fish_spp,color=fish_spp,group=river,shape=river),size=2)+
+  scale_shape_manual(
+    values = c("off_river" = 17, "on_river" = 16),
+    breaks = c("on_river", "off_river"),
+    labels = c("on river", "off river"),
+    name = "Sampling location",
+    guide = guide_legend(
+      order = 1,
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  ) +
+  scale_color_manual(
+    values = pal,
+    name = "Host spp.",
+    guide = guide_legend(
+      order = 2,
+      label.theme = element_text(face = "italic"),
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  )+
+  xlab("year")+
+  ylab("number of parasite individuals per parasite taxon per fish individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(axis.ticks.y = element_line(color = "black", linewidth = 0.5),
+        axis.ticks.length.y = unit(0.1, "cm"),
+        plot.title=element_text(size=18,hjust=0.5,face="plain"),
+        axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=22),
+        axis.text.x=element_text(size=16,color="black"),
+        axis.title.x=element_text(size=22),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        panel.background=element_rect(fill="white",color="black"),
+        panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),
+        plot.margin=unit(c(0,0,0,0),"cm"))+
+  theme(legend.position="top")
+on_river_plot
 
 
-# then make the temporal plots of psite change - just the raw data
+off_river_plot<-ggplot(off_river_data,aes(jitter(YearCollected,amount=0.5),jitter(as.numeric(psite_count),amount=0.5)))+
+  geom_point(aes(group=fish_spp,color=fish_spp,group=river,shape=river),size=2)+
+  scale_shape_manual(
+    values = c("off_river" = 17, "on_river" = 16),
+    breaks = c("on_river", "off_river"),
+    labels = c("on river", "off river"),
+    name = "Sampling location",
+    guide = guide_legend(
+      order = 1,
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  ) +
+  scale_color_manual(
+    values = pal,
+    name = "Host spp.",
+    guide = guide_legend(
+      order = 2,
+      label.theme = element_text(face = "italic"),
+      title.position = "left",
+      title.vjust = 0.6
+    )
+  )+
+  xlab("year")+
+  ylab("number of parasite individuals per parasite taxon per fish individual")+
+  theme_minimal()+
+  #labs(linetype="parasite life history strategy")+
+  theme(axis.ticks.y = element_line(color = "black", linewidth = 0.5),
+        axis.ticks.length.y = unit(0.1, "cm"),
+        plot.title=element_text(size=18,hjust=0.5,face="plain"),
+        axis.text.y=element_text(size=14),
+        axis.title.y=element_text(size=22),
+        axis.text.x=element_text(size=16,color="black"),
+        axis.title.x=element_text(size=22),
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        panel.background=element_rect(fill="white",color="black"),
+        panel.grid.major=element_line(color=NA),
+        panel.grid.minor=element_line(color=NA),
+        plot.margin=unit(c(0,0,0,0),"cm"))+
+  theme(legend.position="top")
+off_river_plot
+
+# Put the two plots together
+
+river_figure <- ggdraw(plot=NULL,xlim=c(0,20),ylim=c(0,10))+
+  draw_plot(on_river_plot,x=0,y=0,width=10,height=10)+
+  draw_plot(off_river_plot,x=10,y=0,width=10,height=10)+
+  draw_label("(a)",x=0.5,y=9.75,size=30)+
+  draw_label("(b)",x=8.5,y=9.75,size=30)
+river_figure
+
+# Okay, not huge differences, although a much later decine in psites of HYBAMA on the river than off.
+# Keep this in mind as you analyze... I think it might be interesting to separate out this on/off river effect.
 
 
 
 #### MODELS
-
-
-# I couldn't get models to converge with an offset term, but maybe that's okay? Putting it here for safekeeping.
-
-(offset(log(TotalLength_mm)))
-
 
 # Test the big hyps
 
